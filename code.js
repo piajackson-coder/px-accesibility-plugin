@@ -91,7 +91,7 @@ var WCAG = {
   '1.4.2':  { level:'A',  en:'Audio Control', es:'Control del audio', scope:'code', auto:false,
               plain:'Si algo suena solo por más de 3 segundos, tiene que poder pausarse.' },
   '1.4.3':  { level:'AA', en:'Contrast (Minimum)', es:'Contraste (mínimo)', scope:'auto', auto:true,
-              plain:'El texto necesita 4.5:1 contra su fondo. Si es de 18px o más (o 14px en negrita), alcanza con 3:1.' },
+              plain:'El texto necesita 4.5:1 contra su fondo. Si es grande (24 px o más, o 18,67 px en negrita), alcanza con 3:1.' },
   '1.4.4':  { level:'AA', en:'Resize Text', es:'Cambio de tamaño del texto', scope:'auto', auto:true,
               plain:'Al ampliar el texto al 200% nada se puede cortar ni superponer. Ojo con los contenedores de alto fijo.' },
   '1.4.5':  { level:'AA', en:'Images of Text', es:'Imágenes de texto', scope:'auto', auto:false,
@@ -3127,6 +3127,10 @@ function detectInteractive(node) {
 // Cuando el nodo tiene mezcla, manda el tamaño MÁS CHICO y la negrita solo
 // cuenta si es de punta a punta: el requisito lo fija la parte más exigente.
 
+// Texto grande según WCAG: 18pt, o 14pt en negrita, pasados a px de pantalla
+// 14pt = 18,666…px: se compara contra 18.66 para que 18,67 entre como grande
+var TEXTO_GRANDE_PX = 24, TEXTO_GRANDE_BOLD_PX = 18.66;
+
 function textMetrics(node) {
   var size = null, bold = null, mixto = false;
 
@@ -3176,10 +3180,11 @@ function textMetrics(node) {
     fontSize: Math.round(size * 10) / 10,
     bold: bold,
     mixto: mixto,
-    // WCAG: grande es 18pt (≈24px) o 14pt bold (≈18.66px). En la práctica de
-    // diseño digital se usa el equivalente en px que define la propia norma.
-    isLarge: size >= 18 || (size >= 14 && bold),
-    required: (size >= 18 || (size >= 14 && bold)) ? 3 : 4.5
+    // WCAG: grande es 18pt o 14pt en negrita. En pantalla son 24px o 18,67px
+    // (1pt = 1.333px). Antes se usaba 18/14 como si fueran px, y textos de 18
+    // a 23px pasaban con 3:1 cuando la norma les pide 4.5:1.
+    isLarge: size >= TEXTO_GRANDE_PX || (size >= TEXTO_GRANDE_BOLD_PX && bold),
+    required: (size >= TEXTO_GRANDE_PX || (size >= TEXTO_GRANDE_BOLD_PX && bold)) ? 3 : 4.5
   };
 }
 
@@ -8188,7 +8193,7 @@ function colorsFromSelection() {
 //
 // Three states per pair, because "pasa / no pasa" hides the useful middle case:
 //   AA     ratio ≥ 4.5 → sirve para cualquier texto
-//   LARGE  ratio ≥ 3   → solo para 18px+, o 14px bold
+//   LARGE  ratio ≥ 3   → solo para texto grande: 24px+, o 18.66px en negrita
 //   NO     ratio < 3   → no sirve para texto (ni siquiera para bordes)
 
 function cellState(ratio) {
@@ -8203,23 +8208,11 @@ function cellState(ratio) {
 // tres estados. Va al costado de la matriz de la misma paleta, y regenerarla
 // la actualiza en su lugar.
 function buildMatrixListFrame(matrix, etiqueta) {
-  var container = getOrCreateAnnotContainer();
   var firma = matrix.map(function(r) { return r.bg.hex; }).join('');
   var titulo = etiqueta && String(etiqueta).trim()
     ? String(etiqueta).trim().slice(0, 40) : matrix.length + ' colores';
 
-  var previa = null, matriz = null;
-  for (var i = container.children.length - 1; i >= 0; i--) {
-    var ch = container.children[i], fl = '', fm = '';
-    try { fl = ch.getPluginData('wcagListaFirma') || ''; fm = ch.getPluginData('wcagMatrixFirma') || ''; } catch (e) {}
-    if (fl === firma) previa = ch;
-    if (fm === firma) matriz = ch;
-  }
-  var pos = null;
-  if (previa) { pos = { x: previa.x, y: previa.y }; previa.remove(); }
-  else if (matriz) pos = { x: matriz.x + matriz.width + 48, y: matriz.y };
-  else pos = freeSpotOnCanvas();
-
+  var lugar = lugarJuntoASeleccion();
   var W = 460, PAD = 28;
   var INK = { r: 0.04, g: 0.04, b: 0.05 }, MUTED = { r: 0.42, g: 0.42, b: 0.46 };
 
@@ -8233,10 +8226,9 @@ function buildMatrixListFrame(matrix, etiqueta) {
   doc.paddingLeft = PAD; doc.paddingRight = PAD; doc.paddingTop = PAD; doc.paddingBottom = PAD;
   doc.cornerRadius = 16;
   doc.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
-  doc.x = pos.x; doc.y = pos.y;
-  container.appendChild(doc);
-  try { doc.setPluginData('wcagListaFirma', firma); } catch (e) {}
-  sealOverlay(doc, false);
+  figma.currentPage.appendChild(doc);
+  doc.x = lugar.x; doc.y = lugar.y;
+  try { doc.setPluginData('wcagListaFirma', firma); doc.setPluginData('wcagAncla', lugar.ancla); } catch (e) {}
 
   function text(parent, chars, size, bold, colr) {
     var t = figma.createText();
@@ -8275,11 +8267,12 @@ function buildMatrixListFrame(matrix, etiqueta) {
 
   text(doc, 'Combinaciones de ' + titulo, 20, true);
   text(doc, pares.length + ' pares de texto sobre fondo, de mejor a peor. WCAG 2.2 AA (1.4.3).', 11, false, MUTED);
+  text(doc, 'Texto grande: 24 px o más con cualquier peso, o 18,67 px o más en negrita. Mínimo 3:1. Por debajo es texto normal: 4,5:1.', 13, true);
 
   [
     { t: 'Cualquier texto', d: '4.5:1 o más', ok: function(v) { return v >= 4.5; },
       c: { r: 0.05, g: 0.45, b: 0.38 } },
-    { t: 'Solo texto grande', d: 'entre 3:1 y 4.5:1: 18px, o 14px en negrita', ok: function(v) { return v >= 3 && v < 4.5; },
+    { t: 'Solo texto grande', d: 'entre 3:1 y 4,5:1: 24 px o más, o 18,67 px en negrita', ok: function(v) { return v >= 3 && v < 4.5; },
       c: { r: 0.6, g: 0.4, b: 0.02 } },
     { t: 'No usar para texto', d: 'menos de 3:1', ok: function(v) { return v < 3; },
       c: { r: 0.75, g: 0.16, b: 0.13 } }
@@ -8327,193 +8320,228 @@ function buildMatrixListFrame(matrix, etiqueta) {
   return doc;
 }
 
-function buildMatrixFrame(matrix, etiqueta) {
-  var CELL = 88, GAP = 6, LABEL_W = 210, HEAD_H = 108, PAD = 32;
-  var container = getOrCreateAnnotContainer();
+// Dónde va un documento que pega el plugin (matriz, lista): al costado de lo
+// que la persona tiene seleccionado, como un frame común de la página. No se
+// borra al generar otro: cada nueva se agrega al lado de la última que se pegó
+// junto a esa misma selección, así quedan en fila.
+function lugarJuntoASeleccion() {
+  var sel = figma.currentPage.selection || [];
+  var minX = null, minY = null, maxX = null;
+  sel.forEach(function(n) {
+    var b = n.absoluteBoundingBox; if (!b) return;
+    if (minX === null || b.x < minX) minX = b.x;
+    if (minY === null || b.y < minY) minY = b.y;
+    if (maxX === null || b.x + b.width > maxX) maxX = b.x + b.width;
+  });
+  if (minX === null) { var libre = freeSpotOnCanvas(); return { x: libre.x, y: libre.y, ancla: '' }; }
+  var ancla = sel.map(function(n) { return n.id; }).sort().join(',');
+  var x = maxX + 80;
+  figma.currentPage.children.forEach(function(ch) {
+    var a = ''; try { a = ch.getPluginData('wcagAncla') || ''; } catch (e) {}
+    if (a === ancla && ch.x + ch.width + 48 > x) x = ch.x + ch.width + 48;
+  });
+  return { x: Math.round(x), y: Math.round(minY), ancla: ancla };
+}
 
-  // Antes el nombre era fijo, así que cada matriz nueva borraba la anterior y
-  // no se podían comparar dos paletas. Ahora cada una se identifica por los
-  // colores que contiene: volver a generar la MISMA paleta la actualiza en su
-  // lugar, y una paleta distinta se agrega al costado.
+function buildMatrixFrame(matrix, etiqueta) {
+  var CELL = 92, GAP = 6, LABEL_W = 220, PAD = 32;
   var firma = matrix.map(function(r) { return r.bg.hex; }).join('');
   var titulo = etiqueta && String(etiqueta).trim()
     ? String(etiqueta).trim().slice(0, 40)
     : matrix.length + ' colores';
-  var name = 'WCAG ▸ [Matriz] ' + titulo;
-
-  var xMax = null, yBase = null, reemplaza = null, xFijo = null;
-  for (var i = container.children.length - 1; i >= 0; i--) {
-    var ch = container.children[i];
-    var esMatriz = false, firmaCh = '';
-    try {
-      firmaCh = ch.getPluginData('wcagMatrixFirma') || '';
-      esMatriz = !!firmaCh;
-    } catch (e) {}
-    if (!esMatriz) continue;
-    if (firmaCh === firma) { reemplaza = ch; continue; }
-    // Se lleva registro del borde derecho para no pisar las que ya están
-    if (xMax === null || ch.x + ch.width > xMax) xMax = ch.x + ch.width;
-    if (yBase === null) yBase = ch.y;
-  }
-  if (reemplaza) {
-    // Misma paleta: se regenera donde estaba, para no perder su posición
-    xMax = null; yBase = reemplaza.y; xFijo = reemplaza.x;
-    reemplaza.remove();
-  }
+  var lugar = lugarJuntoASeleccion();
 
   var cols = matrix.length ? matrix[0].cells.length : 0;
+  var ANCHO = Math.max(PAD * 2 + LABEL_W + cols * (CELL + GAP), 980);
   var frame = figma.createFrame();
-  frame.name = name;
+  frame.name = 'WCAG ▸ [Matriz] ' + titulo;
   frame.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
   frame.layoutMode = 'NONE';
   frame.clipsContent = true;
   frame.cornerRadius = 16;
-  frame.resize(PAD * 2 + LABEL_W + cols * (CELL + GAP),
-               PAD * 2 + HEAD_H + matrix.length * (CELL + GAP) + 76);
-  if (xFijo !== null) {
-    frame.x = xFijo; frame.y = yBase;
-  } else if (xMax !== null) {
-    frame.x = xMax + 48;                 // al costado de la última
-    frame.y = yBase === null ? 0 : yBase;
-  } else {
-    var spot = freeSpotOnCanvas();
-    frame.x = spot.x; frame.y = spot.y;
-  }
-  container.appendChild(frame);
-  try { frame.setPluginData('wcagMatrixFirma', firma); } catch (e) {}
-  sealOverlay(frame, false);
+  frame.resize(ANCHO, 400);
+  figma.currentPage.appendChild(frame);
+  frame.x = lugar.x; frame.y = lugar.y;
+  try { frame.setPluginData('wcagMatrixFirma', firma); frame.setPluginData('wcagAncla', lugar.ancla); } catch (e) {}
 
   var INK   = { r: 0.04, g: 0.04, b: 0.05 };
   var MUTED = { r: 0.45, g: 0.45, b: 0.48 };
-  var TEAL  = { r: 0.129, g: 0.588, b: 0.529 };
-  var AMBER = { r: 0.635, g: 0.427, b: 0.02 };
-  var GREY  = { r: 0.6, g: 0.6, b: 0.63 };
+  var TEAL  = { r: 0.05, g: 0.45, b: 0.38 };
+  var AMBER = { r: 0.6, g: 0.4, b: 0.02 };
+  var GREY  = { r: 0.55, g: 0.55, b: 0.58 };
 
-  // Fixed-size text: textAutoResize HEIGHT let long token names wrap onto the
-  // next line and spill over the row beneath, which is what made the column
-  // headers overlap. NONE clips instead of overflowing.
-  function label(txt, x, y, size, bold, colr, w, h) {
+  // Texto con ancho fijo y alto real. Hasta dos líneas: lo que sobra se corta
+  // con "…" en vez de derramarse sobre la línea de abajo (eso era lo que se pisaba).
+  function label(txt, x, y, size, bold, colr, w, lineas) {
     var t = figma.createText();
-    t.characters = txt;
-    t.fontSize = size;
+    frame.appendChild(t);
     t.fontName = { family: 'Inter', style: bold ? 'Bold' : 'Regular' };
+    t.fontSize = size;
+    t.characters = String(txt);
     t.fills = [{ type: 'SOLID', color: colr || INK }];
     if (w) {
-      t.textAutoResize = 'NONE';
-      t.resize(w, h || Math.ceil(size * 1.35));
+      t.textAutoResize = 'HEIGHT';
+      t.resize(w, t.height);
+      if (lineas) { try { t.maxLines = lineas; t.textTruncation = 'ENDING'; } catch (e) {} }
     }
     t.x = x; t.y = y;
-    frame.appendChild(t);
     return t;
   }
-
   function swatch(hex, x, y, size, radius) {
     var r = figma.createRectangle();
+    frame.appendChild(r);
     r.resize(size, size);
-    r.x = x; r.y = y;
     r.cornerRadius = radius === undefined ? 5 : radius;
     r.fills = [{ type: 'SOLID', color: hexToFigmaRGB(hex) }];
     r.strokes = [{ type: 'SOLID', color: { r: 0.87, g: 0.87, b: 0.89 } }];
     r.strokeWeight = 1;
-    frame.appendChild(r);
+    r.x = x; r.y = y;
     return r;
   }
+  function caja(x, y, w, h, fill, stroke) {
+    var f = figma.createFrame();
+    frame.appendChild(f);
+    f.resize(w, h); f.cornerRadius = 10;
+    f.fills = [{ type: 'SOLID', color: fill }];
+    if (stroke) { f.strokes = [{ type: 'SOLID', color: stroke }]; f.strokeWeight = 1; }
+    f.x = x; f.y = y;
+    return f;
+  }
 
-  label(titulo === matrix.length + ' colores'
-    ? 'Combinaciones de color accesibles'
-    : titulo, PAD, PAD, 21, true, INK, 640, 28);
-  label('WCAG 2.2 AA  ·  ' + matrix.length + ' colores  ·  ' + (matrix.length * cols) +
-        ' combinaciones  ·  cada celda dice para qué tamaño de texto sirve',
-        PAD, PAD + 30, 11, false, MUTED, 720, 16);
+  var y = PAD;
+  var t1 = label(titulo === matrix.length + ' colores' ? 'Combinaciones de color accesibles' : titulo,
+                 PAD, y, 22, true, INK, ANCHO - PAD * 2, 1);
+  y += t1.height + 4;
+  var t2 = label('WCAG 2.2 AA (1.4.3)  ·  ' + matrix.length + ' colores  ·  ' + (matrix.length * cols) +
+                 ' combinaciones  ·  cada celda dice para qué tamaño de texto sirve',
+                 PAD, y, 12, false, MUTED, ANCHO - PAD * 2, 2);
+  y += t2.height + 18;
 
-  // Column headers — swatch above, name and hex clipped to the column width
+  // Qué es texto grande y cómo leer las celdas: arriba y grande, que es lo
+  // primero que hay que saber para usar la tabla
+  // La tabla de qué es texto grande, tal cual la usa el equipo
+  var filasTG = [['Cómo se muestra el texto', 'Categoría de contraste', 'Mínimo en AA'],
+                 ['24 px o más, con cualquier peso', 'Grande', '3:1'],
+                 ['18,67 px o más, en negrita', 'Grande', '3:1'],
+                 ['Por debajo de esos límites', 'Normal', '4,5:1']];
+  var FILA = 34, anchoT = ANCHO - PAD * 2 - 40, colsT = [0.5, 0.3, 0.2];
+  var bandaH = 20 + filasTG.length * FILA + 20 + 44 + 20;
+  var banda = caja(PAD, y, ANCHO - PAD * 2, bandaH, { r: 0.965, g: 0.965, b: 0.973 });
+  banda.name = 'Qué es texto grande';
+  var tabla = caja(PAD + 20, y + 20, anchoT, filasTG.length * FILA, { r: 1, g: 1, b: 1 }, { r: 0.1, g: 0.1, b: 0.12 });
+  tabla.name = 'Tabla · texto grande'; tabla.cornerRadius = 8; tabla.clipsContent = true;
+  filasTG.forEach(function(fila, fi) {
+    var cx = 0;
+    fila.forEach(function(celda, ci) {
+      var cw = Math.round(anchoT * colsT[ci]);
+      var t = figma.createText(); tabla.appendChild(t);
+      t.fontName = { family: 'Inter', style: fi === 0 ? 'Bold' : 'Regular' };
+      t.fontSize = 13; t.characters = celda; t.fills = [{ type: 'SOLID', color: INK }];
+      t.x = cx + 14; t.y = fi * FILA + 9;
+      if (ci > 0) { var lv = figma.createRectangle(); tabla.appendChild(lv); lv.resize(1, filasTG.length * FILA);
+        lv.fills = [{ type: 'SOLID', color: { r: 0.1, g: 0.1, b: 0.12 } }]; lv.x = cx; lv.y = 0; }
+      cx += cw;
+    });
+    if (fi > 0) { var lh = figma.createRectangle(); tabla.appendChild(lh); lh.resize(anchoT, 1);
+      lh.fills = [{ type: 'SOLID', color: { r: 0.1, g: 0.1, b: 0.12 } }]; lh.x = 0; lh.y = fi * FILA; }
+  });
+  var refs = [
+    { c: TEAL,  fill: { r: 0.9, g: 0.97, b: 0.95 }, a: 'Aa  Aa', d: '4,5:1 o más', e: 'cualquier texto' },
+    { c: AMBER, fill: { r: 1, g: 0.96, b: 0.86 },   a: 'Aa',     d: 'entre 3:1 y 4,5:1', e: 'solo texto grande' },
+    { c: GREY,  fill: { r: 0.94, g: 0.94, b: 0.95 }, a: '2.1',   d: 'menos de 3:1', e: 'no usar para texto' }
+  ];
+  var ry0 = y + 20 + filasTG.length * FILA + 20;
+  var rx = PAD + 20, rw = Math.floor((anchoT - 24) / 3);
+  refs.forEach(function(r) {
+    var k = caja(rx, ry0, rw, 44, r.fill);
+    k.name = 'Referencia (' + r.e + ')';
+    var ta = figma.createText(); k.appendChild(ta);
+    ta.fontName = { family: 'Inter', style: 'Bold' }; ta.fontSize = 16; ta.characters = r.a;
+    ta.fills = [{ type: 'SOLID', color: r.c }]; ta.x = 12; ta.y = 12;
+    var td = figma.createText(); k.appendChild(td);
+    td.fontName = { family: 'Inter', style: 'Bold' }; td.fontSize = 12; td.characters = r.d + '  ·  ' + r.e;
+    td.fills = [{ type: 'SOLID', color: r.c }]; td.x = 12 + ta.width + 10; td.y = 14;
+    rx += rw + 12;
+  });
+  y += bandaH + 24;
+
+  // Encabezados de columna: muestra, nombre (hasta 2 líneas) y hex debajo
+  var headTop = y, headBottom = y;
   if (matrix[0]) {
     matrix[0].cells.forEach(function(cell, ci) {
       var x = PAD + LABEL_W + ci * (CELL + GAP);
-      swatch(cell.fg.hex, x, PAD + HEAD_H - 52, 18, 4);
-      label(cell.fg.name, x, PAD + HEAD_H - 30, 9.5, true, INK, CELL - 6, 13);
-      label(cell.fg.hex,  x, PAD + HEAD_H - 16, 8.5, false, MUTED, CELL - 6, 12);
+      swatch(cell.fg.hex, x, headTop, 20, 5);
+      var nm = label(cell.fg.name, x, headTop + 28, 10.5, true, INK, CELL - 4, 2);
+      var hx = label(cell.fg.hex, x, nm.y + nm.height + 2, 9, false, MUTED, CELL - 4, 1);
+      if (hx.y + hx.height > headBottom) headBottom = hx.y + hx.height;
     });
   }
-  label('Fondo ↓   Texto →', PAD, PAD + HEAD_H - 30, 10, true, MUTED, LABEL_W - 12, 14);
+  label('Fondo ↓   Texto →', PAD, headBottom - 16, 11, true, MUTED, LABEL_W - 12, 1);
+  y = headBottom + 14;
 
   matrix.forEach(function(row, ri) {
-    var y = PAD + HEAD_H + ri * (CELL + GAP);
-
-    swatch(row.bg.hex, PAD, y + (CELL - 48) / 2, 48, 8);
-    label(row.bg.name, PAD + 60, y + CELL / 2 - 15, 11.5, true, INK, LABEL_W - 70, 16);
-    label(row.bg.hex,  PAD + 60, y + CELL / 2 + 2,  9.5, false, MUTED, LABEL_W - 70, 13);
+    var ry = y + ri * (CELL + GAP);
+    swatch(row.bg.hex, PAD, ry + (CELL - 48) / 2, 48, 8);
+    var nm = label(row.bg.name, PAD + 60, 0, 12, true, INK, LABEL_W - 72, 2);
+    var hx = label(row.bg.hex, PAD + 60, 0, 10, false, MUTED, LABEL_W - 72, 1);
+    var alto = nm.height + 2 + hx.height;
+    nm.y = ry + (CELL - alto) / 2; hx.y = nm.y + nm.height + 2;
 
     row.cells.forEach(function(cell, ci) {
       var x = PAD + LABEL_W + ci * (CELL + GAP);
       var st = cellState(cell.ratio);
-
       var box = figma.createFrame();
+      frame.appendChild(box);
       box.layoutMode = 'VERTICAL';
       box.primaryAxisSizingMode = 'FIXED';
       box.counterAxisSizingMode = 'FIXED';
       box.primaryAxisAlignItems = 'CENTER';
       box.counterAxisAlignItems = 'CENTER';
-      box.itemSpacing = 3;
+      box.itemSpacing = 2;
       box.paddingLeft = 4; box.paddingRight = 4;
       box.paddingTop = 6;  box.paddingBottom = 6;
       box.resize(CELL, CELL);
-      box.x = x; box.y = y;
       box.cornerRadius = 8;
       box.clipsContent = true;
+      box.x = x; box.y = ry;
       box.name = cell.fg.name + ' sobre ' + row.bg.name + ' · ' + cell.ratio + ':1 · ' +
         (st === 'AA' ? 'cualquier texto' : st === 'LARGE' ? 'solo texto grande' : 'no usar');
-      frame.appendChild(box);
-
       function txt(chars, size, bold, colr, opacity) {
         var t = figma.createText();
-        t.characters = chars;
-        t.fontSize = size;
+        box.appendChild(t);
         t.fontName = { family: 'Inter', style: bold ? 'Bold' : 'Regular' };
+        t.fontSize = size;
+        t.characters = chars;
         t.textAlignHorizontal = 'CENTER';
         var f = { type: 'SOLID', color: colr };
         if (opacity !== undefined) f.opacity = opacity;
         t.fills = [f];
-        box.appendChild(t);
         return t;
       }
-
       if (st === 'NO') {
-        // Never render text nobody could read: show the number instead.
         box.fills = [{ type: 'SOLID', color: { r: 0.949, g: 0.949, b: 0.953 } }];
         box.strokes = [{ type: 'SOLID', color: { r: 0.898, g: 0.898, b: 0.91 } }];
         box.strokeWeight = 1;
-        txt(cell.ratio.toFixed(1), 15, true, GREY);
-        txt('no usar', 8.5, false, GREY);
+        txt(cell.ratio.toFixed(1), 16, true, GREY);
+        txt('no usar', 9, false, GREY);
       } else {
         box.fills = [{ type: 'SOLID', color: hexToFigmaRGB(row.bg.hex) }];
         box.strokes = [{ type: 'SOLID', color: { r: 0.878, g: 0.878, b: 0.894 } }];
         box.strokeWeight = 1;
-
-        // Two previews: body size and large size, so the difference is visible
-        // and not just asserted in a label.
-        // La muestra tiene que estar en el tamaño del que habla la celda: si el
-        // par solo sirve para texto grande, mostrar la chica confunde.
-        txt('Aa', 20, true, hexToFigmaRGB(cell.fg.hex));
-        if (st === 'AA') txt('Aa', 12, false, hexToFigmaRGB(cell.fg.hex));
-        txt(cell.ratio.toFixed(1) + ' · ' + (st === 'AA' ? 'todo texto' : 'solo grande'),
-            8.5, true, hexToFigmaRGB(cell.fg.hex), 0.85);
+        var c = hexToFigmaRGB(cell.fg.hex);
+        txt('Aa', 22, true, c);
+        if (st === 'AA') txt('Aa', 12, false, c);
+        txt(cell.ratio.toFixed(1) + ':1', 9.5, true, c, 0.9);
+        txt(st === 'AA' ? 'todo texto' : 'solo grande', 8.5, false, c, 0.85);
       }
     });
   });
 
-  // Legend — spells out what the three cell states mean
-  var ly = PAD + HEAD_H + matrix.length * (CELL + GAP) + 14;
-  label('Cómo leer la tabla', PAD, ly, 11, true, INK, 400, 15);
-  label('Aa grande + Aa chica  ·  pasa 4.5:1  ·  sirve para cualquier tamaño de texto.',
-        PAD, ly + 20, 10, false, TEAL, 700, 14);
-  label('Solo Aa grande  ·  pasa 3:1  ·  únicamente 18px o más, o 14px en negrita. La chica no se puede usar.',
-        PAD, ly + 35, 10, false, AMBER, 700, 14);
-  label('Celda gris  ·  por debajo de 3:1  ·  no usar para texto.',
-        PAD, ly + 50, 10, false, GREY, 700, 14);
-
+  var fin = y + matrix.length * (CELL + GAP) + PAD - GAP;
+  frame.resize(ANCHO, Math.max(fin, 200));
   return frame;
 }
+
 // ─── Reporte de auditoría como frame de Figma ────────────────────────────────
 // Antes era una sola columna de 720px que se estiraba miles de píxeles hacia
 // abajo: ilegible en el canvas e imposible de presentar. Ahora es un documento
@@ -9825,8 +9853,8 @@ function handleMessage(msg) {
           return {
             fg: { name: fg.name, hex: fg.hex },
             ratio: ratio,
-            normalAA: ratio >= 4.5,   // text under 18px
-            largeAA:  ratio >= 3.0,   // ≥18px, or ≥14px bold
+            normalAA: ratio >= 4.5,   // texto normal
+            largeAA:  ratio >= 3.0,   // texto grande: ≥24px, o ≥18.66px en negrita
             uiAA:     ratio >= 3.0,   // borders, icons, focus rings (1.4.11)
             normalAAA: ratio >= 7.0,
             largeAAA:  ratio >= 4.5
