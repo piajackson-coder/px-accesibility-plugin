@@ -14,8 +14,12 @@
     "allowedDomains": [
       "https://api.anthropic.com",
       "https://fonts.googleapis.com",
-      "https://fonts.gstatic.com"
+      "https://fonts.gstatic.com",
+      "https://piajackson-coder.github.io"
     ],
-    "reasoning": "api.anthropic.com se usa solo si la persona carga su propia API key, para generar borradores de texto alternativo. Las fuentes de Google cargan la tipografía del panel."
+    "reasoning": "api.anthropic.com se usa solo si la persona carga su propia API key, para generar borradores de texto alternativo. Las fuentes de Google cargan la tipografía del panel. piajackson-coder.github.io sirve la copia web del panel, la única forma de usar el cuentagotas del sistema.",
+    "devAllowedDomains": [
+      "http://localhost:5178"
+    ]
   }
 }

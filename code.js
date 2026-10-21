@@ -3368,6 +3368,8 @@ function cuerpoDe(textos) {
 //   · RECOMENDACIONES de legibilidad, que no son requisito AA: WCAG no fija un
 //     tamaño mínimo, y el interlineado de 1.5 es una pauta de 1.4.8 (AAA) para
 //     párrafos, no un requisito de 1.4.12, que habla de lo que hace la persona.
+var TEXTO_MIN_PX = 12;   // debajo de esto el texto no se lee, aunque WCAG no fije un mínimo
+
 function analyzeTypography(rootNode) {
   skippedHiddenLayers = 0;
   skippedHiddenNames  = [];
@@ -3421,8 +3423,11 @@ function analyzeTypography(rootNode) {
     } catch (e) {}
 
     // ── Recomendaciones de legibilidad (no son requisito AA)
-    if (size !== null && size < 12) problems.push({ wcag: 'legibilidad', severity: 'info', tipo: 'recomendacion',
-      text: 'Texto de ' + size + 'px. WCAG no fija un mínimo, pero por debajo de 12px cuesta leer; usalo solo para notas muy secundarias.' });
+    // Por debajo de 12px no es una sugerencia: no se lee. No es una falla de
+    // WCAG (no fija un mínimo), así que va aparte y bien visible, no plegado
+    // entre las mejoras opcionales.
+    if (size !== null && size < TEXTO_MIN_PX) problems.push({ wcag: 'legibilidad', severity: 'warning', tipo: 'chico',
+      text: 'Texto de ' + size + 'px: muy chico para leer. WCAG no fija un mínimo, pero por debajo de ' + TEXTO_MIN_PX + 'px no se lee bien; llevalo a ' + TEXTO_MIN_PX + 'px o más.' });
     else if (esLectura && size !== null && size < lecturaMin) problems.push({ wcag: 'legibilidad', severity: 'info', tipo: 'recomendacion',
       text: 'Texto de lectura de ' + size + 'px en ' + dispositivo.tipo + '. Para leer de corrido se recomienda ' + lecturaMin + 'px o más.' });
 
@@ -3455,6 +3460,7 @@ function analyzeTypography(rootNode) {
     total: items.length,
     withProblems: items.filter(function(i) { return i.problems.some(function(p) { return p.tipo === 'riesgo'; }); }).length,
     conRecomendaciones: items.filter(function(i) { return i.problems.some(function(p) { return p.tipo === 'recomendacion'; }); }).length,
+    muyChicos: items.filter(function(i) { return i.problems.some(function(p) { return p.tipo === 'chico'; }); }).length,
     dispositivo: dispositivo, cuerpo: cuerpo, lecturaMin: lecturaMin,
     hiddenSkipped: skippedHiddenLayers
   };
@@ -8267,19 +8273,21 @@ function buildMatrixListFrame(matrix, etiqueta) {
 
   text(doc, 'Combinaciones de ' + titulo, 20, true);
   text(doc, pares.length + ' pares de texto sobre fondo, de mejor a peor. WCAG 2.2 AA (1.4.3).', 11, false, MUTED);
-  text(doc, 'Texto grande: 24 px o más con cualquier peso, o 18,67 px o más en negrita. Mínimo 3:1. Por debajo es texto normal: 4,5:1.', 13, true);
+  text(doc, 'Texto grande: 24 px o más (o 18,67 px en negrita)', 15, true);
+  text(doc, 'Texto chico: menos de 24 px (o 18,67 px en negrita)', 15, true);
+  text(doc, 'Cada par es un texto sobre un fondo. El número dice cuánto se distinguen: cuanto más alto, mejor se lee.', 11, false, MUTED);
 
   [
-    { t: 'Cualquier texto', d: '4.5:1 o más', ok: function(v) { return v >= 4.5; },
+    { t: 'Sirve para todo', d: '4,5:1 o más', ok: function(v) { return v >= 4.5; },
       c: { r: 0.05, g: 0.45, b: 0.38 } },
-    { t: 'Solo texto grande', d: 'entre 3:1 y 4,5:1: 24 px o más, o 18,67 px en negrita', ok: function(v) { return v >= 3 && v < 4.5; },
+    { t: 'Solo para texto grande', d: 'entre 3:1 y 4,5:1', ok: function(v) { return v >= 3 && v < 4.5; },
       c: { r: 0.6, g: 0.4, b: 0.02 } },
-    { t: 'No usar para texto', d: 'menos de 3:1', ok: function(v) { return v < 3; },
+    { t: 'No sirve para texto', d: 'menos de 3:1', ok: function(v) { return v < 3; },
       c: { r: 0.75, g: 0.16, b: 0.13 } }
   ].forEach(function(g) {
     var lista = pares.filter(function(p) { return g.ok(p.ratio); });
     if (!lista.length) return;
-    text(doc, g.t + ' · ' + lista.length + '  —  ' + g.d, 12, true, g.c);
+    text(doc, g.t + ':  ' + g.d, 12, true, g.c);
     lista.forEach(function(p) {
       var f = fila(doc, 12);
       f.resize(W - PAD * 2, 36);
@@ -8419,42 +8427,37 @@ function buildMatrixFrame(matrix, etiqueta) {
 
   // Qué es texto grande y cómo leer las celdas: arriba y grande, que es lo
   // primero que hay que saber para usar la tabla
-  // La tabla de qué es texto grande, tal cual la usa el equipo
-  var filasTG = [['Cómo se muestra el texto', 'Categoría de contraste', 'Mínimo en AA'],
-                 ['24 px o más, con cualquier peso', 'Grande', '3:1'],
-                 ['18,67 px o más, en negrita', 'Grande', '3:1'],
-                 ['Por debajo de esos límites', 'Normal', '4,5:1']];
-  var FILA = 34, anchoT = ANCHO - PAD * 2 - 40, colsT = [0.5, 0.3, 0.2];
-  var bandaH = 20 + filasTG.length * FILA + 20 + 44 + 20;
+  // Arriba, lo mismo que el panel: cómo leer la matriz, qué es chico y
+  // grande, y qué número tiene que cumplir cada uno
+  var anchoT = ANCHO - PAD * 2 - 40;
+  var bandaH = 20 + 28 + 26 + 78 + 22 + 22 + 44 + 20;
   var banda = caja(PAD, y, ANCHO - PAD * 2, bandaH, { r: 0.965, g: 0.965, b: 0.973 });
-  banda.name = 'Qué es texto grande';
-  var tabla = caja(PAD + 20, y + 20, anchoT, filasTG.length * FILA, { r: 1, g: 1, b: 1 }, { r: 0.1, g: 0.1, b: 0.12 });
-  tabla.name = 'Tabla · texto grande'; tabla.cornerRadius = 8; tabla.clipsContent = true;
-  filasTG.forEach(function(fila, fi) {
-    var cx = 0;
-    fila.forEach(function(celda, ci) {
-      var cw = Math.round(anchoT * colsT[ci]);
-      var t = figma.createText(); tabla.appendChild(t);
-      t.fontName = { family: 'Inter', style: fi === 0 ? 'Bold' : 'Regular' };
-      t.fontSize = 13; t.characters = celda; t.fills = [{ type: 'SOLID', color: INK }];
-      t.x = cx + 14; t.y = fi * FILA + 9;
-      if (ci > 0) { var lv = figma.createRectangle(); tabla.appendChild(lv); lv.resize(1, filasTG.length * FILA);
-        lv.fills = [{ type: 'SOLID', color: { r: 0.1, g: 0.1, b: 0.12 } }]; lv.x = cx; lv.y = 0; }
-      cx += cw;
+  banda.name = 'Cómo leer la matriz';
+  label('Cómo leer la matriz', PAD + 20, y + 20, 20, true, INK, anchoT, 1);
+  label('Cada celda es un texto sobre un fondo. El número dice cuánto se distinguen: cuanto más alto, mejor se lee.',
+        PAD + 20, y + 50, 12, false, MUTED, anchoT, 1);
+  var tw = Math.floor((anchoT - 12) / 2);
+  [['TEXTO CHICO', 'menos de 24 px', 'menos de 18,67 px si es negrita'],
+   ['TEXTO GRANDE', '24 px o más', '18,67 px o más si es negrita']].forEach(function(tm, i) {
+    var k = caja(PAD + 20 + i * (tw + 12), y + 76, tw, 66, { r: 1, g: 1, b: 1 }, { r: 0.87, g: 0.87, b: 0.89 });
+    k.name = tm[0];
+    [[tm[0], 10, true, MUTED, 10], [tm[1], 16, true, INK, 25], [tm[2], 11, false, MUTED, 46]].forEach(function(l) {
+      var t = figma.createText(); k.appendChild(t);
+      t.fontName = { family: 'Inter', style: l[2] ? 'Bold' : 'Regular' }; t.fontSize = l[1]; t.characters = l[0];
+      t.fills = [{ type: 'SOLID', color: l[3] }]; t.x = 14; t.y = l[4];
     });
-    if (fi > 0) { var lh = figma.createRectangle(); tabla.appendChild(lh); lh.resize(anchoT, 1);
-      lh.fills = [{ type: 'SOLID', color: { r: 0.1, g: 0.1, b: 0.12 } }]; lh.x = 0; lh.y = fi * FILA; }
   });
+  label('QUÉ NÚMERO TIENE QUE CUMPLIR', PAD + 20, y + 76 + 66 + 22, 11, true, MUTED, anchoT, 1);
   var refs = [
-    { c: TEAL,  fill: { r: 0.9, g: 0.97, b: 0.95 }, a: 'Aa  Aa', d: '4,5:1 o más', e: 'cualquier texto' },
-    { c: AMBER, fill: { r: 1, g: 0.96, b: 0.86 },   a: 'Aa',     d: 'entre 3:1 y 4,5:1', e: 'solo texto grande' },
-    { c: GREY,  fill: { r: 0.94, g: 0.94, b: 0.95 }, a: '2.1',   d: 'menos de 3:1', e: 'no usar para texto' }
+    { c: TEAL,  fill: { r: 0.9, g: 0.97, b: 0.95 }, a: 'Aa  Aa', d: 'Sirve para todo', e: '4,5:1 o más' },
+    { c: AMBER, fill: { r: 1, g: 0.96, b: 0.86 },   a: 'Aa',     d: 'Solo para texto grande', e: 'entre 3:1 y 4,5:1' },
+    { c: GREY,  fill: { r: 0.94, g: 0.94, b: 0.95 }, a: '—',     d: 'No sirve para texto', e: 'menos de 3:1' }
   ];
-  var ry0 = y + 20 + filasTG.length * FILA + 20;
+  var ry0 = y + 76 + 66 + 22 + 22;
   var rx = PAD + 20, rw = Math.floor((anchoT - 24) / 3);
   refs.forEach(function(r) {
     var k = caja(rx, ry0, rw, 44, r.fill);
-    k.name = 'Referencia (' + r.e + ')';
+    k.name = 'Referencia (' + r.d + ')';
     var ta = figma.createText(); k.appendChild(ta);
     ta.fontName = { family: 'Inter', style: 'Bold' }; ta.fontSize = 16; ta.characters = r.a;
     ta.fills = [{ type: 'SOLID', color: r.c }]; ta.x = 12; ta.y = 12;
@@ -9219,16 +9222,31 @@ figma.on('selectionchange', function() {
   // Con el cuentagotas activo, tocar una capa toma su color
   if (modoCuentagotas) {
     var sel0 = figma.currentPage.selection[0];
+    // "ambos": un toque sobre un texto trae su color y el del fondo que tiene
+    // detrás, el mismo que usa "Revisar la selección"
+    if (sel0 && modoCuentagotas === 'ambos' && sel0.type === 'TEXT') {
+      var ct = colorDeCapa(sel0), fondo = null;
+      try { fondo = resolveBackground(sel0); } catch (e) {}
+      if ((ct.fill || ct.stroke) && fondo && fondo.hex) {
+        figma.ui.postMessage({ type: 'picked-pair', fg: ct.fill || ct.stroke, bg: fondo.hex,
+          desde: sel0.name || 'Texto', fondoDesde: fondo.source || '', aproximado: !!fondo.approximate || !!fondo.isDefault,
+          compuesto: !!ct.compuesto, opacidad: ct.opacidad });
+        modoCuentagotas = null;
+        figma.ui.postMessage({ type: 'picker-state', destino: null });
+        return;
+      }
+    }
     if (sel0) {
       var c = colorDeCapa(sel0);
       var hex = c.fill || c.stroke;
       if (hex) {
-        figma.ui.postMessage({ type: 'picked-color', destino: modoCuentagotas,
-          hex: hex, desde: sel0.name || sel0.type,
+        var siguiente = modoCuentagotas === 'ambos' ? 'bg' : null;
+        figma.ui.postMessage({ type: 'picked-color', destino: modoCuentagotas === 'ambos' ? 'fg' : modoCuentagotas,
+          hex: hex, desde: sel0.name || sel0.type, sigue: siguiente,
           esTexto: sel0.type === 'TEXT', tipo: c.fill ? 'relleno' : 'borde',
           compuesto: !!c.compuesto, opacidad: c.opacidad, crudo: c.crudo });
-        modoCuentagotas = null;
-        figma.ui.postMessage({ type: 'picker-state', destino: null });
+        modoCuentagotas = siguiente;
+        figma.ui.postMessage({ type: 'picker-state', destino: siguiente });
       } else {
         figma.ui.postMessage({ type: 'picker-miss', nombre: sel0.name || sel0.type });
       }

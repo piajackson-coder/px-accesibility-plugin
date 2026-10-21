@@ -698,9 +698,53 @@
            font-size:11.5px;line-height:1.6}
   .pick-on svg{width:15px;height:15px;flex-shrink:0;margin-top:1px;color:#FFB800}
   .pick-on b{color:var(--text)}
+  .pick-tip{display:block;font-size:10.5px;color:var(--muted);margin-top:4px}
+  .pick-main{display:flex;align-items:center;justify-content:center;gap:8px}
+  .pick-n{font-size:11px;color:var(--muted);line-height:1.55;margin:0 0 12px}
   .pick-on button{display:block;margin-top:8px;background:none;border:1px solid var(--line);
                   color:var(--muted);font-family:var(--font);font-size:10.5px;font-weight:700;
                   padding:5px 10px;border-radius:6px;cursor:pointer}
+  .sk-cards{display:flex;gap:8px;align-items:center;margin:4px 0 0}
+  .sk-card{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:rgba(var(--ov),.03)}
+  .sk-card.on{border-color:#FFB800;box-shadow:0 0 0 1px #FFB800}
+  .sk-sw{display:flex;align-items:center;justify-content:center;width:100%;height:66px;border:0;
+         cursor:pointer;position:relative;padding:0}
+  .sk-ed{width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+         background:rgba(255,255,255,.9);color:#000;box-shadow:0 1px 4px rgba(0,0,0,.25);transition:transform .12s}
+  .sk-ed svg{width:16px;height:16px}
+  .sk-sw:hover .sk-ed{transform:scale(1.1)}
+  .sk-sw:focus-visible{outline:2px solid var(--blue);outline-offset:-3px}
+  .sk-tag{position:absolute;right:6px;bottom:5px;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;
+          background:rgba(0,0,0,.55);color:#fff}
+  .sk-hex{display:block;width:100%;box-sizing:border-box;background:transparent;border:0;border-top:1px solid var(--line);
+          color:var(--text);font-family:var(--mono);font-size:12px;padding:8px 10px;text-align:center}
+  .sk-hex:focus{outline:2px solid var(--blue);outline-offset:-2px}
+  .sk-swap{flex-shrink:0;width:26px;height:26px;border-radius:50%;border:1px solid var(--line);background:transparent;
+           color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:0}
+  .sk-swap:hover{color:var(--text);border-color:rgba(var(--ov),.4)}
+  .sk-swap svg{width:12px;height:12px}
+  .sk-ratio{text-align:center;padding:18px 0 14px;border-bottom:1px solid var(--line)}
+  .sk-ratio b{display:block;font-size:40px;line-height:1.05;font-weight:800;letter-spacing:-1px;color:var(--text)}
+  .sk-ratio span{font-size:11px;color:var(--muted)}
+  .sk-res{padding:10px 0 4px}
+  .sk-row{display:flex;align-items:center;gap:10px;padding:7px 0}
+  .sk-row > div{flex:1;min-width:0}
+  .sk-row b{display:block;font-size:12.5px;color:var(--text)}
+  .sk-row span:not(.sk-ic){font-size:10.5px;color:var(--muted)}
+  .sk-row em{font-style:normal;font-family:var(--mono);font-size:12px;color:var(--text-2)}
+  .sk-ic{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;color:#fff}
+  .sk-ic svg{width:11px;height:11px}
+  .sk-row.sk-ok .sk-ic{background:var(--pass);color:var(--bg)}
+  .sk-row.sk-no .sk-ic{background:var(--fail);color:var(--bg)}
+  .sk-sug{display:flex;align-items:center;gap:9px;padding:9px 10px;margin:6px 0 4px;border:1px solid var(--line);
+          border-radius:8px;font-size:11px;color:var(--text-2)}
+  .sk-sug > div{flex:1;min-width:0}
+  .sk-sug b{font-family:var(--mono);color:var(--text)}
+  .sk-sug .btn-ghost{padding:5px 10px;font-size:11px;width:auto}
+  .sk-chip{width:18px;height:18px;border-radius:5px;border:1px solid var(--line);flex-shrink:0}
+  .sk-alt{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:12px 0 10px;font-size:10.5px;color:var(--dim)}
+  .sk-alt .linkbtn{display:inline-flex;align-items:center;gap:5px;font-size:11px}
+  .sk-alt .linkbtn svg{width:12px;height:12px}
   .pick-on button:hover{color:var(--text);border-color:rgba(var(--ov),.4)}
   .cg-l{font-size:10.5px;color:var(--dim);margin:12px 0 8px;line-height:1.5}
   .cg-l b{color:var(--muted)}
@@ -779,6 +823,7 @@
   .subtabs.solapas .subtab.on{background:none;color:var(--text);border-bottom-color:var(--text)}
   .c-res{display:flex;gap:9px;align-items:center;padding:10px 12px;border-radius:9px;margin-bottom:10px;
          background:rgba(53,210,192,.08);border:1px solid rgba(53,210,192,.3);color:var(--pass-text);font-size:12px}
+  .c-res.aviso{background:rgba(255,184,0,.07);border-color:rgba(255,184,0,.32);color:var(--warn-text)}
   .c-res.mal{background:rgba(239,78,68,.07);border-color:rgba(239,78,68,.32);color:var(--fail-text)}
   .c-res b{color:inherit}
   .c-res-ic{display:flex}
@@ -895,7 +940,29 @@
   .tg-def{border:1.5px solid rgba(255,184,0,.6);background:rgba(255,184,0,.07);border-radius:10px;padding:12px 14px;margin-bottom:10px}
   .tg-def > b{display:block;font-size:14px;line-height:1.35;color:var(--text)}
   .tg-def > span{display:block;font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
-  .tg-def .mxleg{margin:10px 0 0;padding:0;border:none;background:none}
+  .tg-def .mxleg{margin:8px 0 0;padding:0;border:none;background:none}
+  /* Versión compacta: que explique sin ocupar media pantalla */
+  .tg-def{padding:10px 12px}
+  .tg-def > b{font-size:12.5px}
+  .tg-def > span{font-size:10.5px;margin-top:2px}
+  .tg-def .tg-sizes{gap:6px;margin-top:8px}
+  .tg-def .tg-sizes > div{padding:6px 9px;border-radius:7px}
+  .tg-def .tg-sizes em{font-size:9px}
+  .tg-def .tg-sizes strong{font-size:12.5px;margin-top:1px}
+  .tg-def .tg-sizes small{font-size:9.5px;margin-top:1px}
+  .tg-def .tg-sub{margin-top:9px;font-size:9px}
+  .tg-def .mxleg{gap:5px;margin-top:5px}
+  .tg-def .mxleg-i{gap:9px;font-size:11px}
+  .tg-def .mxleg-c{width:34px;height:26px;border-radius:5px}
+  .tg-def .mxleg-c.aa b,.tg-def .mxleg-c.lg b{font-size:10.5px}
+  .tg-def .mxleg-c.aa i{font-size:6.5px}
+  .tg-def .mxleg-i div span{font-size:9.5px}
+  .tg-sizes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .tg-sizes > div{background:rgba(var(--ov),.05);border:1px solid var(--line);border-radius:9px;padding:9px 11px}
+  .tg-sizes em{display:block;font-style:normal;font-size:10px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;color:var(--muted)}
+  .tg-sizes strong{display:block;font-size:15px;margin-top:3px;color:var(--text)}
+  .tg-sizes small{display:block;font-size:10.5px;color:var(--muted);margin-top:2px}
+  .tg-sub{margin-top:14px;font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--muted)}
   .tg-t{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px}
   .tg-t th,.tg-t td{border:1px solid var(--line);padding:6px 8px;text-align:left;color:var(--text)}
   .tg-t th{font-weight:700}
@@ -1215,7 +1282,14 @@
 // Versión del plugin. Como los plugins locales no se actualizan solos, la
 // versión y la fecha quedan a la vista y se dice dónde chequear si hay una
 // nueva. Sin esto nadie sabe qué está corriendo.
-var VERSION = 'v1.2.2';
+var VERSION = 'v1.2.3';
+
+// El cuentagotas del sistema (el de la lupa, que toma de toda la pantalla)
+// solo existe si el panel tiene dirección web. Figma carga este HTML sin
+// dirección, así que para el cuentagotas el panel se recarga desde una copia
+// publicada de este mismo archivo, de la misma versión. Es lo que hace Stark.
+var UI_WEB = 'https://piajackson-coder.github.io/px-accesibility-plugin/v/' + VERSION + '/ui.html';
+var EN_WEB = /^https?:$/.test(location.protocol);
 var VERSION_FECHA = '2026-10-21';
 var VERSION_REPO = 'GitHub';
 // Cuando exista, poné acá la URL del repo (https://github.com/…) y el pie
@@ -1232,6 +1306,13 @@ document.addEventListener('click', function(ev){
 
 // Lo que cambió en cada versión. Se muestra en Ayuda → Novedades.
 var CHANGELOG = [
+  { v:'v1.2.3', fecha:'2026-10-21', items:[
+    'Cuentagotas como en Stark: el mouse se vuelve el cuentagotas del sistema, con lupa, y toma el color de cualquier parte de la pantalla.',
+    'Tipografía: un texto de menos de 12px ya no queda escondido en "Mejoras opcionales": sale arriba como muy chico para leer.',
+    'Cuentagotas: dos muestras, el contraste en grande y si sirve para texto chico, texto grande e íconos. Se compara solo.',
+    'Cuentagotas: "Tocá un texto del canvas" toma el color del texto y el de su fondo de un solo clic.',
+    'Matriz de color: "Cómo leer la matriz" con texto chico, texto grande y qué contraste tiene que cumplir cada uno.'
+  ]},
   { v:'v1.2.2', fecha:'2026-10-21', items:[
     'Texto grande según WCAG: 24 px o más, o 18,67 px en negrita (antes se usaban 18px y 14px, que son puntos).',
     'Matriz de color: los nombres ya no se pisan con el hex, la definición de texto grande va arriba y bien grande.',
@@ -1305,7 +1386,8 @@ var WCAG_INFO = {};
 var CON_MODO_COLOR = ['analyze-selection','analyze-contrast','run-audit'];
 function post(m){
   if (m && CON_MODO_COLOR.indexOf(m.type) > -1) m.modoColor = S.modoColor;
-  parent.postMessage({ pluginMessage: m }, '*');
+  if (EN_WEB) parent.postMessage({ pluginMessage: m, pluginId: '*' }, '*');
+  else parent.postMessage({ pluginMessage: m }, '*');
 }
 
 var toastT;
@@ -1479,6 +1561,8 @@ var I = {
   x:        svg('<path d="M18 6L6 18M6 6l12 12"/>'),
   approx:   svg('<path d="M3 9c2.5-3 5-3 7.5 0S15.5 12 18 9M3 15c2.5-3 5-3 7.5 0s5 3 7.5 0"/>'),
   dot:      '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0"></span>',
+  pipette:  svg('<path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 113 3L18 9l.4.4a2.1 2.1 0 11-3 3l-3.8-3.8a2.1 2.1 0 113-3l.4.4z"/>'),
+  swap:     svg('<path d="M7 7h13l-4-4M17 17H4l4 4"/>'),
   refresh:  svg('<path d="M21 12a9 9 0 11-2.6-6.4M21 3v6h-6"/>'),
   play:     svg('<path d="M6 4l14 8-14 8z"/>'),
   stamp:    svg('<rect x="3" y="14" width="18" height="7" rx="2"/><path d="M8 14V8a4 4 0 118 0v6"/>'),
@@ -1653,7 +1737,10 @@ function renderColor(){
   if (mn) mn.oninput = function(){ S.mxNombre = mn.value; };
 
   el.querySelectorAll('[data-ct]').forEach(function(b){
-    b.onclick = function(){ S.colorTab = b.dataset.ct; render(); };
+    b.onclick = function(){
+      if (b.dataset.ct === 'manual' && necesitaWeb()) { irAWeb(null); return; }
+      S.colorTab = b.dataset.ct; render();
+    };
   });
   wireColor(el);
 }
@@ -1856,56 +1943,57 @@ function pairBlock(p){
 
 function pickerBlock(){
   var fg = S.manualFg || '#000000', bg = S.manualBg || '#FFFFFF';
-  var open = S.showPicker === true;
   var activo = S.pickerDestino;
 
-  return '<div class="picker">'+
-
-      (activo
-        ? '<div class="pick-on">'+I.drop+'<div><b>Tocá una capa en el canvas.</b> '+
-          'Se toma su color de relleno —o el del borde si no tiene relleno— y se carga como '+
-          (activo==='fg'?'color de texto':'fondo')+'.'+
-          '<button data-cancel-pick="1">Cancelar</button></div></div>'
-        : '<p style="margin:12px 0 10px">'+
-          (typeof window.EyeDropper === 'function' && !S.sinEyeDropper
-            ? 'Tocá el cuentagotas y hacé clic en cualquier parte de la pantalla, también en el canvas: '+
-              'toma el color tal como se ve. Si preferís el color exacto de una capa, '+
-              '<button class="linkbtn" data-ed-capa="fg">tomalo de una capa</button>.'
-            : 'Tocá el cuentagotas y después una capa del canvas: se toma su relleno. '+
-              'También podés elegir de la grilla del frame o escribir el hex.')+'</p>')+
-
-      '<div class="sw-role" style="margin-bottom:5px">Texto</div>'+
-      '<div class="hexrow"><input class="hexin" id="inFg" value="'+esc(fg)+'" maxlength="7" '+
-      'aria-label="Color de texto en hexadecimal">'+
-      '<button class="pick'+(activo==='fg'?' on':'')+'" data-ed="fg" '+
-      'aria-label="Tomar el color de texto de una capa del canvas">'+I.drop+'</button></div>'+
-
-      '<div class="sw-role" style="margin:11px 0 5px">Fondo</div>'+
-      '<div class="hexrow"><input class="hexin" id="inBg" value="'+esc(bg)+'" maxlength="7" '+
-      'aria-label="Color de fondo en hexadecimal">'+
-      '<button class="pick'+(activo==='bg'?' on':'')+'" data-ed="bg" '+
-      'aria-label="Tomar el color de fondo de una capa del canvas">'+I.drop+'</button></div>'+
-
-      '<button class="btn-primary btn-wide" id="btnManual" style="margin:13px 0 10px">'+
-      'Comparar</button>'+
-
-      // Grilla de colores del frame
-      (S.coloresFrame
-        ? (S.coloresFrame.length
-            ? '<div class="cg-l">Colores de <b>'+esc(S.coloresFrameNombre||'la selección')+'</b> — '+
-              'tocá uno para cargarlo</div>'+
-              '<div class="cg">'+ S.coloresFrame.map(function(c){
-                return '<button class="cg-i" data-color="'+esc(c.hex)+'" '+
-                  'title="'+esc(c.hex)+' · '+c.usos+' usos · '+esc(c.ejemplo||'')+'">'+
-                  '<span style="background:'+esc(c.hex)+'"></span>'+
-                  '<em>'+esc(c.hex)+'</em></button>'; }).join('') +'</div>'+
-              '<div class="cg-h">Un toque carga el color como <b>texto</b>. '+
-              'Con Alt o Option, como <b>fondo</b>.</div>'
-            : '<div class="cg-l">No se encontraron colores sólidos en la selección.</div>')
-        : '<button class="btn-ghost btn-wide" id="verColores">'+I.palette+
-          ' Ver los colores del frame seleccionado</button>')+
-
+  // Una muestra por color, como Stark: el cuentagotas va en el medio de la
+  // muestra y el hex abajo, editable. El ícono toma el color de lo que se ve
+  // contra la muestra para que siempre se distinga.
+  function muestra(rol, hex, nombre){
+    var on = activo === rol || activo === 'ambos';
+    return '<div class="sk-card'+(on?' on':'')+'">'+
+      '<button class="sk-sw" data-ed="'+rol+'" style="background:'+esc(hex)+'" '+
+        'aria-label="Cuentagotas para el color de '+nombre.toLowerCase()+'" title="Cuentagotas: tomá el color de '+nombre.toLowerCase()+'">'+
+        '<span class="sk-ed">'+I.pipette+'</span><span class="sk-tag">'+nombre+'</span></button>'+
+      '<input class="sk-hex" id="'+(rol==='bg'?'inBg':'inFg')+'" value="'+esc(hex)+'" maxlength="7" '+
+        'spellcheck="false" aria-label="Color de '+nombre.toLowerCase()+' en hexadecimal">'+
     '</div>';
+  }
+
+  return '<div class="picker">'+
+    '<div class="sk-cards">'+ muestra('fg', fg, 'Texto') +
+      '<button class="sk-swap" id="skSwap" aria-label="Intercambiar texto y fondo" title="Intercambiar">'+I.swap+'</button>'+
+      muestra('bg', bg, 'Fondo') +'</div>'+
+
+    (activo
+      ? '<div class="pick-on">'+I.drop+'<div><b>Cuentagotas activo.</b> '+
+        (activo==='ambos'
+          ? 'Hacé clic en un <b>texto</b> del canvas: tomamos su color y el del fondo que tiene detrás.'
+          : activo==='bg' ? 'Hacé clic en la capa del <b>fondo</b>.' : 'Hacé clic en la capa del <b>texto</b>.')+
+        '<span class="pick-tip">Si está dentro de un grupo o un componente, usá ⌘ clic (Ctrl clic en Windows).</span>'+
+        '<button data-cancel-pick="1">Cancelar</button></div></div>'
+      : '')+
+  '</div>';
+}
+
+// Lo de abajo del veredicto: las otras formas de cargar un color
+function pickerExtras(){
+  return '<div class="sk-alt">'+
+      '<button class="linkbtn" data-ed-capa="ambos">'+I.pointer+' Tocá un texto del canvas</button>'+
+      '<span>toma el texto y su fondo de una</span></div>'+
+    (S.coloresFrame
+      ? (S.coloresFrame.length
+          ? '<div class="cg-l">Colores de <b>'+esc(S.coloresFrameNombre||'la selección')+'</b> - '+
+            'tocá uno para cargarlo</div>'+
+            '<div class="cg">'+ S.coloresFrame.map(function(c){
+              return '<button class="cg-i" data-color="'+esc(c.hex)+'" '+
+                'title="'+esc(c.hex)+' · '+c.usos+' usos · '+esc(c.ejemplo||'')+'">'+
+                '<span style="background:'+esc(c.hex)+'"></span>'+
+                '<em>'+esc(c.hex)+'</em></button>'; }).join('') +'</div>'+
+            '<div class="cg-h">Un toque carga el color como <b>texto</b>. '+
+            'Con Alt o Option, como <b>fondo</b>.</div>'
+          : '<div class="cg-l">No se encontraron colores sólidos en la selección.</div>')
+      : '<button class="btn-ghost btn-wide" id="verColores">'+I.palette+
+        ' Ver los colores del frame seleccionado</button>');
 }
 
 function modoCapa(destino){
@@ -1923,60 +2011,101 @@ function hexDePixel(v){
     return ('0' + Number(x).toString(16)).slice(-2); }).join('').toUpperCase();
 }
 
-function cuentagotasPantalla(destino){
-  var ed;
-  try { ed = new window.EyeDropper(); } catch (e) { S.sinEyeDropper = true; modoCapa(destino); return; }
-  toast('Hacé clic en cualquier parte de la pantalla para tomar el color. Esc cancela.');
-  ed.open().then(function(r){
+// El cuentagotas: el mouse se vuelve el cuentagotas del sistema, con la lupa
+// que agranda los píxeles, y toma el color que SE VE en cualquier parte de la
+// pantalla, con opacidades y capas encima ya resueltas.
+function cuentagotas(destino){
+  if (S.pickerDestino) { S.pickerDestino = null; post({ type:'set-picker', destino:null }); }
+  if (necesitaWeb()) { irAWeb(destino); return; }
+  var abierto = null;
+  if (typeof window.EyeDropper === 'function') {
+    try { abierto = new window.EyeDropper().open(); } catch (e) { abierto = null; }
+  }
+  if (!abierto) {
+    toast('Este Figma no trae el cuentagotas del sistema. Tocá la capa en el canvas.', true);
+    modoCapa(destino); return;
+  }
+  abierto.then(function(r){
     var hex = hexDePixel(r && r.sRGBHex);
     if (!hex) { toast('No se pudo leer ese color.', true); return; }
-    if (destino === 'bg') S.manualBg = hex; else S.manualFg = hex;
-    if (!S.manualFg) S.manualFg = '#000000';
-    if (!S.manualBg) S.manualBg = '#FFFFFF';
-    S.showPicker = true;
-    render();
-    toast(hex + ' tomado como ' + (destino === 'bg' ? 'fondo' : 'color de texto') +
-          '. En un texto, apuntá a la parte más gruesa de la letra: el borde está suavizado.');
+    colorTomado(destino, hex);
   }).catch(function(e){
     if (e && e.name === 'AbortError') return;          // Esc: no pasa nada
-    // Bloqueada por el entorno (permisos del iframe): no se vuelve a intentar
-    S.sinEyeDropper = true;
-    toast('El cuentagotas de pantalla no está disponible acá. Tocá una capa del canvas para tomar su color.', true);
+    toast('No se pudo abrir el cuentagotas (' + ((e && e.name) || 'error') + '). Tocá la capa en el canvas.', true);
     modoCapa(destino);
   });
 }
 
-// Solapa "Comparar colores": dos colores a mano, con el cuentagotas o la
-// grilla del frame, y el mismo veredicto que el resto de la pantalla.
-function colorManual(){
-  var par = null;
-  if (S.manualFg && S.manualBg){
-    var v = r2(ratio(S.manualFg, S.manualBg));
-    par = { nodeId:'', nodeName:'Comparación', text:'Los dos colores elegidos', fg:S.manualFg, bg:S.manualBg, ratio:v,
-            fontSize:16, bold:false, isLarge:false, requiredAA:4.5, passAA:v >= 4.5,
-            suggestionAA: v >= 4.5 ? null : sugerirColor(S.manualFg, S.manualBg, 4.5) };
+function necesitaWeb(){ return typeof window.EyeDropper !== 'function' && !EN_WEB; }
+
+// Recarga el panel desde la copia web, ya parado en el Cuentagotas y con los
+// mismos colores. Sin internet, se queda acá y usa el modo de tocar la capa.
+function irAWeb(destino){
+  function sinWeb(){
+    toast('El cuentagotas necesita internet. Mientras tanto, tocá la capa en el canvas.', true);
+    S.colorTab = 'manual';
+    if (destino) modoCapa(destino); else render();
   }
-  return pickerBlock() + (par ? '<div class="c-sec">Resultado</div>' + pairBlock(par) : '');
+  if (typeof window.fetch !== 'function') { sinWeb(); return; }
+  toast('Abriendo el cuentagotas…');
+  window.fetch(UI_WEB, { mode:'no-cors', cache:'no-store' }).then(function(){
+    navegar(UI_WEB + '#gotero=1&fg=' + encodeURIComponent(S.manualFg || '#000000') +
+      '&bg=' + encodeURIComponent(S.manualBg || '#FFFFFF'));
+  }).catch(sinWeb);
 }
 
-function manualPanel(){
-  // contrastPanel() nunca existió: la comparación manual reventaba en cuanto se
-  // cargaba un color. Se arma con pairBlock, que es lo que ya dibuja el veredicto
-  // en el resto de la pantalla, así los dos caminos se ven igual.
+function navegar(url){ location.href = url; }
+
+// Lo que trae la dirección al volver de irAWeb
+function leerGotero(){
+  var h = location.hash.slice(1);
+  if (h.indexOf('gotero=') < 0) return null;
+  var o = {};
+  h.split('&').forEach(function(kv){ var p = kv.split('='); o[p[0]] = decodeURIComponent(p[1] || ''); });
+  return o;
+}
+
+function colorTomado(destino, hex){
+  if (destino === 'bg') S.manualBg = hex; else S.manualFg = hex;
+  if (!S.manualFg) S.manualFg = '#000000';
+  if (!S.manualBg) S.manualBg = '#FFFFFF';
+  S.colorTab = 'manual';
+  render();
+  toast(hex + ' tomado como ' + (destino === 'bg' ? 'fondo' : 'color de texto') + '.');
+}
+
+function colorTomado(destino, hex){
+  if (destino === 'bg') S.manualBg = hex; else S.manualFg = hex;
+  if (!S.manualFg) S.manualFg = '#000000';
+  if (!S.manualBg) S.manualBg = '#FFFFFF';
+  S.colorTab = 'manual';
+  render();
+  toast(hex + ' tomado como ' + (destino === 'bg' ? 'fondo' : 'color de texto') + '.');
+}
+
+
+// Solapa "Comparar colores": dos muestras, el número grande y para qué sirve.
+// Se compara solo, sin botón: cada color nuevo actualiza el veredicto.
+function colorManual(){
   var fg = S.manualFg || '#000000', bg = S.manualBg || '#FFFFFF';
   var v = r2(ratio(fg, bg));
-
-  var par = {
-    nodeId: '', nodeName: 'Comparación manual', text: 'Aa',
-    fg: fg, bg: bg, ratio: v,
-    fontSize: 16, bold: false, isLarge: false,
-    requiredAA: 4.5, passAA: v >= 4.5,
-    suggestion: v >= 4.5 ? null : sugerirColor(fg, bg, 4.5)
-  };
-
-  return '<div class="note note-mut"><span>'+I.info+'</span><div>Comparación manual. '+
-    '<u style="cursor:pointer" id="backToSel">Volver a la selección</u></div></div>'+
-    pairBlock(par) + pickerBlock();
+  function fila(nombre, detalle, umbral){
+    var ok = v >= umbral;
+    return '<div class="sk-row'+(ok?' sk-ok':' sk-no')+'"><span class="sk-ic">'+(ok?I.check:I.x)+'</span>'+
+      '<div><b>'+nombre+'</b><span>'+detalle+'</span></div><em>'+String(umbral).replace('.',',')+':1</em></div>';
+  }
+  var sug = v >= 4.5 ? null : sugerirColor(fg, bg, 4.5);
+  return pickerBlock()+
+    '<div class="sk-ratio"><b>'+String(v).replace('.',',')+':1</b><span>Contraste del texto con el fondo (WCAG)</span></div>'+
+    '<div class="sk-res">'+
+      fila('Texto chico', 'menos de 24 px, o de 18,67 px en negrita', 4.5)+
+      fila('Texto grande', '24 px o más, o 18,67 px en negrita', 3)+
+      fila('Íconos, bordes y controles', 'lo que no es texto', 3)+
+    '</div>'+
+    (sug ? '<div class="sk-sug"><span class="sk-chip" style="background:'+esc(sug.hex)+'"></span>'+
+      '<div>Para que sirva en texto chico: <b>'+esc(sug.hex)+'</b> ('+String(sug.ratio).replace('.',',')+':1)</div>'+
+      '<button class="btn-ghost" data-usar="'+esc(sug.hex)+'">Usar</button></div>' : '')+
+    pickerExtras();
 }
 
 // Busca el tono más cercano al original que llegue al umbral. El mismo criterio
@@ -1985,7 +2114,8 @@ function sugerirColor(fg, bg, umbral){
   var rgb = hx(fg);
   if (!rgb) return null;
   var lumBg = lum(hx(bg).r, hx(bg).g, hx(bg).b);
-  var oscurecer = lum(rgb.r, rgb.g, rgb.b) > lumBg;
+  // Se aleja del fondo: un texto más oscuro que el fondo se oscurece, uno más claro se aclara
+  var oscurecer = lum(rgb.r, rgb.g, rgb.b) < lumBg;
 
   for (var paso = 1; paso <= 100; paso++) {
     var f = oscurecer ? (1 - paso / 100) : 1;
@@ -2049,16 +2179,25 @@ function colorMx(){
 
   var total = S.palette.length * S.palette.length;
 
-  // Una sola explicación: qué es texto grande y cómo leer cada celda, con
-  // cuántas combinaciones caen en cada caso. El nombre lo toma de la selección.
-  return '<div class="tg-def"><b>Texto grande: 24 px o más, o 18,67 px en negrita</b>'+
+  // Una sola explicación: qué es texto grande y cómo leer cada celda. Sin
+  // cantidades: se confundían con los tamaños. El nombre lo toma de la selección.
+  // Para alguien que abre una matriz por primera vez: qué es cada celda, qué
+  // es chico y grande, y qué número tiene que cumplir cada uno.
+  return '<div class="tg-def">'+
+    '<b>Cómo leer la matriz</b>'+
+    '<span>Cada celda es un texto sobre un fondo. El número dice cuánto se distinguen: más alto, mejor se lee.</span>'+
+    '<div class="tg-sizes">'+
+      '<div><em>Texto chico</em><strong>menos de 24 px</strong><small>menos de 18,67 px si es negrita</small></div>'+
+      '<div><em>Texto grande</em><strong>24 px o más</strong><small>18,67 px o más si es negrita</small></div>'+
+    '</div>'+
+    '<div class="tg-sub">Qué número tiene que cumplir</div>'+
     '<div class="mxleg">'+
       '<div class="mxleg-i"><span class="mxleg-c aa"><b>Aa</b><i>Aa</i></span>'+
-      '<div><b>'+cuenta.AA+'</b> · cualquier texto<span>4,5:1 o más</span></div></div>'+
+      '<div><b>Sirve para todo</b><span>4,5:1 o más · lo mínimo para texto chico</span></div></div>'+
       '<div class="mxleg-i"><span class="mxleg-c lg"><b>Aa</b></span>'+
-      '<div><b>'+cuenta.LARGE+'</b> · solo texto grande<span>entre 3:1 y 4,5:1</span></div></div>'+
+      '<div><b>Solo para texto grande</b><span>entre 3:1 y 4,5:1 · lo mínimo para texto grande</span></div></div>'+
       '<div class="mxleg-i"><span class="mxleg-c no">—</span>'+
-      '<div><b>'+cuenta.NO+'</b> · no usar para texto<span>menos de 3:1</span></div></div>'+
+      '<div><b>No sirve para texto</b><span>menos de 3:1</span></div></div>'+
     '</div></div>'+
     '<button class="btn-ghost btn-wide" id="btnReload">'+I.refresh+' Volver a tomar colores</button>'+
     '<div class="seg2" style="margin-bottom:10px" role="radiogroup" aria-label="Vista de la matriz">'+
@@ -2146,19 +2285,10 @@ function wireColor(el){
 
   var st = el.querySelector('#edStatus');
 
-  // Cuentagotas de verdad: la EyeDropper del navegador convierte el mouse en
-  // cuentagotas y toma el píxel de cualquier parte de la pantalla, el canvas de
-  // Figma incluido. Como toma el color que SE VE, las opacidades ya vienen
-  // resueltas. Si el entorno no la tiene, se cae al modo de tocar una capa.
+  // Cada muestra abre el cuentagotas del sistema; "Tocá un texto del canvas" toma
+  // texto y fondo juntos tocando la capa.
   el.querySelectorAll('[data-ed]').forEach(function(b){
-    b.onclick = function(){
-      var destino = b.dataset.ed;
-      if (typeof window.EyeDropper === 'function' && !S.sinEyeDropper) {
-        cuentagotasPantalla(destino);
-        return;
-      }
-      modoCapa(destino);
-    };
+    b.onclick = function(){ cuentagotas(b.dataset.ed); };
   });
   el.querySelectorAll('[data-ed-capa]').forEach(function(b){
     b.onclick = function(){ modoCapa(b.dataset.edCapa); };
@@ -2182,15 +2312,31 @@ function wireColor(el){
     };
   });
 
-  var btn = el.querySelector('#btnManual');
-  if (btn) btn.onclick = function(){
-    var a = (el.querySelector('#inFg').value||'').trim().toUpperCase();
-    var b2 = (el.querySelector('#inBg').value||'').trim().toUpperCase();
-    if (a[0] !== '#') a = '#'+a;
-    if (b2[0] !== '#') b2 = '#'+b2;
-    if (!validHex(a) || !validHex(b2)){ toast('Hex inválido. Formato: #RRGGBB', true); return; }
-    S.manualFg = a; S.manualBg = b2; render();
+  // El hex se aplica al salir del campo o con Enter
+  ['inFg','inBg'].forEach(function(id){
+    var inp = el.querySelector('#'+id);
+    if (!inp) return;
+    function aplicar(){
+      var h = (inp.value||'').trim().toUpperCase();
+      if (h && h[0] !== '#') h = '#'+h;
+      if (!validHex(h)){ toast('Hex inválido. Formato: #RRGGBB', true); return; }
+      if (id === 'inBg') { if (h === S.manualBg) return; S.manualBg = h; }
+      else { if (h === S.manualFg) return; S.manualFg = h; }
+      render();
+    }
+    inp.onchange = aplicar;
+    inp.onkeydown = function(ev){ if (ev.key === 'Enter') aplicar(); };
+  });
+
+  var sw = el.querySelector('#skSwap');
+  if (sw) sw.onclick = function(){
+    var f = S.manualFg || '#000000';
+    S.manualFg = S.manualBg || '#FFFFFF'; S.manualBg = f; render();
   };
+
+  el.querySelectorAll('[data-usar]').forEach(function(b){
+    b.onclick = function(){ S.manualFg = b.dataset.usar; render(); toast(b.dataset.usar + ' cargado como color de texto.'); };
+  });
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -2241,8 +2387,8 @@ var TIPO_PROBLEMA = [
     txt:function(n){ return n+' texto'+(n===1?'':'s')+' de lectura chico'+(n===1?'':'s'); },
     fix:'Para leer de corrido conviene un tamaño mayor. No es un requisito de WCAG.' },
   { test:/WCAG no fija/i, k:'chico', riesgo:false, wcag:'legibilidad',
-    txt:function(n){ return n+' por debajo de 12px'; },
-    fix:'WCAG no fija un mínimo, pero cuesta leer. Reservalo para notas muy secundarias.' },
+    txt:function(n){ return n+' texto'+(n===1?'':'s')+' por debajo de 12px'; },
+    fix:'Así no se lee. Llevalo a 12px o más. WCAG no fija un mínimo, por eso no cuenta como falla, pero no lo dejes pasar.' },
   { test:/interlineado/i, k:'interlineado', riesgo:false, wcag:'1.4.8',
     txt:function(n){ return n+' párrafo'+(n===1?'':'s')+' con interlineado apretado'; },
     fix:'Para lectura cómoda, 1.5× el tamaño de la fuente. Es una pauta de nivel AAA, no un requisito AA.' }
@@ -2319,6 +2465,9 @@ function renderType(){
   var D = T.dispositivo || {};
   var riesgos = conProblema.filter(function(i){ return i.problems.some(function(p){ return p.tipo === 'riesgo'; }); });
   var recs = conProblema.filter(function(i){ return i.problems.some(function(p){ return p.tipo === 'recomendacion'; }); });
+  var chicos = conProblema.filter(function(i){ return i.problems.some(function(p){ return p.tipo === 'chico'; }); });
+  var tamChicos = chicos.map(function(i){ return String(i.size).replace('.', ',') + 'px'; })
+    .filter(function(t, k, a){ return a.indexOf(t) === k; }).join(', ');
   function soloDe(items, tipo){
     return items.map(function(i){
       return Object.assign({}, i, { problems: i.problems.filter(function(p){ return p.tipo === tipo; }) });
@@ -2329,12 +2478,18 @@ function renderType(){
     ? '<div class="c-res mal"><span class="c-res-ic">'+I.warn+'</span><div class="c-res-t">'+
       '<b>'+riesgos.length+' texto'+(riesgos.length===1?'':'s')+' para ajustar</b>: se pierde'+(riesgos.length===1?'':'n')+
       ' contenido al ampliar o al aumentar el espaciado.</div></div>'
+    : chicos.length
+    ? '<div class="c-res aviso"><span class="c-res-ic">'+I.warn+'</span><div class="c-res-t">'+
+      '<b>'+chicos.length+' texto'+(chicos.length===1?'':'s')+' muy chico'+(chicos.length===1?'':'s')+'</b> ('+tamChicos+'). '+
+      'Así no se lee: llevalo'+(chicos.length===1?'':'s')+' a 12px o más. WCAG no fija un tamaño mínimo, '+
+      'por eso no cuenta como falla.</div></div>'
     : '<div class="c-res"><span class="c-res-ic">'+I.check+'</span><div class="c-res-t">'+
       '<b>Nada que ajustar.</b> Ningún texto se corta al ampliar al 200% ni al aumentar el espaciado.</div></div>';
 
   el.innerHTML =
     veredicto +
     (riesgos.length ? '<div class="c-sec">Qué ajustar</div>' + gruposTipo(soloDe(riesgos, 'riesgo')) : '') +
+    (chicos.length ? '<div class="c-sec">Muy chico para leer</div>' + gruposTipo(soloDe(chicos, 'chico')) : '') +
     (recs.length
       ? '<details class="c-ok ty-opc"><summary>Mejoras opcionales <em>'+recs.length+'</em><span class="caret">'+I.chevron+'</span></summary>'+
         '<p class="ty-opc-n">No son requisitos de WCAG AA: son buenas prácticas de legibilidad'+
@@ -3917,6 +4072,8 @@ function renderFooter(){
       c.innerHTML = S.typo
         ? '<span><b>'+S.typo.total+'</b> textos · '+(S.typo.withProblems
             ? '<span style="color:var(--fail)"><b>'+S.typo.withProblems+'</b> para ajustar</span>'
+            : S.typo.muyChicos
+            ? '<span style="color:var(--warn-text)"><b>'+S.typo.muyChicos+'</b> muy chico'+(S.typo.muyChicos===1?'':'s')+'</span>'
             : '<span style="color:var(--pass)">nada que ajustar</span>')+'</span>'
         : '<span>Listo para revisar</span>';
       a.innerHTML = '<button class="btn-primary" id="aTypo" '+dis+'>'+busy+I.refresh+' Volver a analizar</button>';
@@ -4474,12 +4631,20 @@ onmessage = function(e){
       toast(S.imagenes.length ? S.imagenes.length+' imágenes encontradas.' : 'No hay imágenes acá.');
       render(); break;
 
+    case 'picked-pair':
+      S.manualFg = m.fg; S.manualBg = m.bg;
+      S.colorTab = 'manual'; S.pickerDestino = null; S.showPicker = true;
+      toast('Texto ' + m.fg + ' de "' + m.desde + '" sobre su fondo ' + m.bg +
+            (m.aproximado ? ' (aproximado: el fondo tiene capas transparentes)' : '') + '.');
+      render(); break;
+
     case 'picked-color':
       if (m.destino === 'bg') S.manualBg = m.hex; else S.manualFg = m.hex;
       if (!S.manualFg) S.manualFg = '#000000';
       if (!S.manualBg) S.manualBg = '#FFFFFF';
       S.colorTab = 'manual';
-      S.pickerDestino = null;
+      S.pickerDestino = m.sigue || null;
+      if (m.sigue) { S.showPicker = true; toast(m.hex + ' tomado como texto. Ahora tocá el fondo.'); render(); break; }
       S.showPicker = true;
       toast(m.compuesto
         ? m.hex + ' tomado de "' + m.desde + '": es el color RESULTANTE, con la opacidad del '
@@ -4675,6 +4840,13 @@ function tryInit(){
   setTimeout(tryInit, 250);
 }
 tryInit();
+var gotero = leerGotero();
+if (gotero) {
+  if (validHex(gotero.fg)) S.manualFg = gotero.fg.toUpperCase();
+  if (validHex(gotero.bg)) S.manualBg = gotero.bg.toUpperCase();
+  S.screen = 'color'; S.colorTab = 'manual';
+  try { history.replaceState(null, '', location.pathname); } catch (e) {}
+}
 post({ type:'get-ai-key' });
 post({ type:'get-pref', key:'wcagTema' });
 render();
