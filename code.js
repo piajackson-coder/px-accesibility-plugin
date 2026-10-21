@@ -6542,6 +6542,18 @@ function coloresDelFrame(rootNode) {
   }).sort(function(a, b) { return b.usos - a.usos; });
 }
 
+// ¿El control tiene texto propio a la vista? Si lo tiene, la imagen de
+// adentro es decorativa; si no, la imagen ES el nombre del control.
+function tieneTextoVisible(node) {
+  var hay = false;
+  (function walk(n) {
+    if (hay || !n || n.visible === false) return;
+    if (n.type === 'TEXT') { try { if ((n.characters || '').trim()) hay = true; } catch (e) {} return; }
+    if (n.children) n.children.forEach(walk);
+  })(node);
+  return hay;
+}
+
 function inventarioImagenes(rootNode) {
   var out = [];
 
@@ -6554,11 +6566,11 @@ function inventarioImagenes(rootNode) {
     var guardado = '';
     try { guardado = n.getPluginData('wcagAlt') || ''; } catch (e) {}
 
-    // ¿Está dentro de un control? Entonces el nombre lo lleva el control.
-    var dentroDeControl = null;
+    // ¿Está dentro de un control (botón, link)?
+    var dentroDeControl = null, controlConTexto = false;
     var p = n.parent, g = 0;
     while (p && g++ < 6) {
-      if (detectInteractive(p).is) { dentroDeControl = p.name || 'un control'; break; }
+      if (detectInteractive(p).is) { dentroDeControl = p.name || 'un control'; controlConTexto = tieneTextoVisible(p); break; }
       p = p.parent;
     }
 
@@ -6566,63 +6578,53 @@ function inventarioImagenes(rootNode) {
     var limpio = nombreUtil(nombre);
     var nLower = nombre.toLowerCase();
 
-    // ── La sugerencia: una frase escrita, no un molde para completar
+    // ── La sugerencia sigue el árbol de decisión de la W3C (WAI, "An alt
+    // Decision Tree"): primero si es parte de un control, después si el texto
+    // de al lado ya lo dice, después si aporta algo. `motivo` es UNA línea:
+    // la pista de por qué el plugin propone eso.
     var sugerido = '', motivo = '', decorativaPorDefecto = false;
 
-    if (dentroDeControl) {
+    if (dentroDeControl && controlConTexto) {
       decorativaPorDefecto = true;
-      motivo = 'Está dentro de "' + dentroDeControl + '". El nombre accesible lo lleva el ' +
-               'control, así que la imagen va con alt vacío para que no se lea dos veces.';
+      motivo = 'Está en "' + dentroDeControl + '", que ya tiene texto: con alt el lector lo diría dos veces.';
+    } else if (dentroDeControl) {
+      sugerido = limpio ? limpio.charAt(0).toUpperCase() + limpio.slice(1) : '';
+      motivo = 'Es lo único que tiene "' + dentroDeControl + '": el alt tiene que decir qué hace o adónde lleva.';
+    } else if (/\b(bg|background|fondo|pattern|patr[oó]n|textura|texture|divider|separador|decor\w*|adorno|ornament\w*|blob|wave|onda|gradient|degradado|shape|forma)\b/.test(nLower)) {
+      decorativaPorDefecto = true;
+      motivo = 'Por el nombre, parece un adorno: fondo, textura o separador.';
     } else if (/\b(logo|isotipo|marca|brand|wordmark)\b/.test(nLower)) {
       sugerido = 'Logo de ' + (limpio || '[empresa]');
-      motivo = 'Un logo se describe por lo que es, no por cómo se ve. Si es el logo del sitio ' +
-               'y está en el header, suele alcanzar con el nombre de la empresa.';
+      motivo = 'Un logo se nombra por lo que es: alcanza con el nombre de la empresa.';
     } else if (/\b(avatar|profile|perfil)\b/.test(nLower)) {
       sugerido = ctx.hermano ? 'Foto de ' + ctx.hermano : 'Foto de perfil';
-      motivo = ctx.hermano
-        ? 'El nombre "' + ctx.hermano + '" ya está escrito al lado: si es así, la foto es ' +
-          'decorativa y va con alt vacío.'
-        : 'Si el nombre de la persona está escrito al lado, la foto es decorativa.';
+      decorativaPorDefecto = !!ctx.hermano;
+      motivo = ctx.hermano ? 'El nombre "' + ctx.hermano + '" ya está escrito al lado.'
+                           : 'Si el nombre de la persona está escrito al lado, es decorativa.';
     } else if (/\b(chart|grafico|gráfico|graph|diagram|diagrama)\b/.test(nLower)) {
       sugerido = ctx.hermano
         ? ctx.hermano + ': [el dato principal que muestra]'
         : 'Gráfico: [qué compara y cuál es el dato principal]';
-      motivo = 'Un gráfico necesita el DATO, no la forma. "Gráfico de barras" no sirve; ' +
-               '"Las ventas subieron 20% en el último trimestre" sí. Si es complejo, además ' +
-               'una tabla o un resumen en texto cerca.';
+      motivo = 'Es un gráfico: el alt cuenta el DATO, no la forma.';
     } else if (ctx.hermano) {
       sugerido = ctx.hermano;
-      motivo = (ctx.encima
-        ? 'Tiene el texto "' + ctx.hermano + '" encima. Si ese texto está como capa de texto ' +
-          'y no dentro del PNG, ya lo lee el lector: la imagen sería decorativa.'
-        : 'Hay un texto a ' + ctx.distancia + 'px que dice "' + ctx.hermano + '". Si el alt ' +
-          'diría lo mismo, la imagen es decorativa: repetirlo hace que se lea dos veces.');
       decorativaPorDefecto = true;
+      motivo = 'Al lado dice "' + ctx.hermano + '": si la imagen dice lo mismo, es decorativa.';
     } else if (clase === 'ilustración') {
       sugerido = limpio ? 'Ilustración: ' + limpio : '';
-      decorativaPorDefecto = !limpio;
-      motivo = limpio
-        ? 'Una ilustración decorativa —de las que acompañan un estado vacío o un onboarding— ' +
-          'va con alt vacío. Solo necesita texto si aporta información que no está escrita.'
-        : 'Las ilustraciones de estados vacíos y onboarding suelen ser decorativas: el mensaje ' +
-          'ya está en el texto que las acompaña.';
+      decorativaPorDefecto = true;
+      motivo = 'Las ilustraciones que acompañan un texto suelen ser de relleno: decorativas.';
     } else if (limpio) {
       sugerido = limpio.charAt(0).toUpperCase() + limpio.slice(1);
-      motivo = 'Salido del nombre de la capa. Revisalo: el alt tiene que decir qué APORTA la ' +
-               'imagen acá, no qué se ve en ella.';
+      motivo = 'Propuesta sacada del nombre de la capa: revisala mirando la imagen.';
     } else {
-      motivo = 'Sin contexto alrededor para deducirlo. Si la imagen aporta información, ' +
-               'escribila; si no, marcala decorativa.';
+      motivo = 'No hay pistas alrededor: mirala y decidí.';
     }
 
-    if (clase === 'placeholder') {
-      motivo = 'Parece el lugar donde va una imagen, aunque todavía no esté puesta. ' +
-               'Dejá el alt documentado igual: llega antes que la imagen. ' + motivo;
-    }
+    if (clase === 'placeholder') motivo = 'Todavía no tiene imagen. ' + motivo;
     if (clase === 'video') {
       sugerido = sugerido || 'Video: [de qué trata]';
-      motivo = 'Un video necesita más que alt: subtítulos (1.2.2) y, si hay información solo ' +
-               'visual, audiodescripción (1.2.5). ' + motivo;
+      motivo = 'Un video además necesita subtítulos (1.2.2). ' + motivo;
     }
 
     out.push({
@@ -6668,6 +6670,13 @@ function guardarAlt(nodeId, alt) {
 // puesta 34px por encima del borde, así que en una grilla quedaba encima de la
 // imagen de la fila anterior y parecía desfasada. Ahora se ancla adentro.
 
+// El mismo color en el recuadro de la imagen y en su fila de la lista
+function colorDeAlt(img) {
+  if (img.alt === '[decorativa]') return { r: 0.04, g: 0.42, b: 0.36 };   // verde: decorativa
+  if (img.alt) return { r: 0.145, g: 0.278, b: 0.906 };                    // azul: con alt
+  return { r: 0.75, g: 0.16, b: 0.13 };                                    // rojo: falta
+}
+
 function etiquetasSobreImagenes(imagenes) {
   var container = getOrCreateAnnotContainer();
   var name = 'WCAG ▸ [Alt] etiquetas';
@@ -6684,73 +6693,80 @@ function etiquetasSobreImagenes(imagenes) {
   container.appendChild(overlay);
   sealOverlay(overlay);
 
-  var AZUL  = { r: 0.10, g: 0.34, b: 0.72 };
-  var VERDE = { r: 0.04, g: 0.42, b: 0.36 };
-  var ROJO  = { r: 0.75, g: 0.16, b: 0.13 };
+  // Un recuadro en el borde de cada imagen y un número en la esquina. El alt
+  // NO va escrito encima: con varias imágenes juntas, las píldoras con texto
+  // se pisaban. El texto va en la lista de al lado, con el mismo número.
+  var puestas = 0, esquinas = [];
 
-  var puestas = 0;
-
-  imagenes.forEach(function(img) {
+  imagenes.forEach(function(img, idx) {
     var n = null;
     try { n = figma.getNodeById(img.nodeId); } catch (e) {}
     if (!n || !n.absoluteBoundingBox) return;
     var b = n.absoluteBoundingBox;
+    var color = colorDeAlt(img);
 
-    var decorativa = (img.alt === '[decorativa]');
-    var texto = decorativa ? 'Alt= ""'
-              : (img.alt ? 'Alt= "' + img.alt + '"' : 'Alt: falta escribirlo');
-    var color = decorativa ? VERDE : (img.alt ? AZUL : ROJO);
+    var marco = figma.createRectangle();
+    marco.name = (idx + 1) + ' · ' + (n.name || 'Imagen');
+    marco.resize(Math.max(1, b.width), Math.max(1, b.height));
+    marco.x = b.x; marco.y = b.y;
+    marco.fills = [];
+    marco.strokes = [{ type: 'SOLID', color: color }];
+    marco.strokeWeight = 3;
+    marco.strokeAlign = 'INSIDE';
+    marco.cornerRadius = 2;
+    overlay.appendChild(marco);
 
-    // La píldora crece con el texto pero no se pasa del ancho de la imagen
-    var maxAncho = Math.max(140, Math.min(b.width * 0.85, 420));
-
-    var pill = figma.createFrame();
-    pill.name = 'Alt · ' + (n.name || '');
-    pill.resize(maxAncho, 34);
-    pill.layoutMode = 'HORIZONTAL';
-    pill.counterAxisSizingMode = 'AUTO';   // el alto lo da el texto
-    pill.primaryAxisSizingMode = 'AUTO';   // y el ancho también, hasta el máximo
-    pill.counterAxisAlignItems = 'CENTER';
-    pill.paddingLeft = 14; pill.paddingRight = 14;
-    pill.paddingTop = 8;   pill.paddingBottom = 8;
-    pill.cornerRadius = 8;
-    pill.fills = [{ type: 'SOLID', color: color }];
-    overlay.appendChild(pill);
-
-    var t = figma.createText();
-    t.characters = texto;
-    t.fontSize = 13;
-    t.fontName = { family: 'Inter', style: 'Bold' };
-    t.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
-    pill.appendChild(t);
-    t.textAutoResize = 'WIDTH_AND_HEIGHT';
-    // Si se pasa del máximo, se fija el ancho y envuelve
-    if (t.width > maxAncho - 28) {
-      t.textAutoResize = 'HEIGHT';
-      t.resize(maxAncho - 28, t.height);
+    // El número va centrado en la esquina de arriba a la izquierda. Si otra
+    // imagen ya usó esa esquina (imágenes anidadas), se corre a la derecha.
+    var D = 28, bx = b.x - D / 2, by = b.y - D / 2;
+    var choca = true, vueltas = 0;
+    while (choca && vueltas++ < 20) {
+      choca = esquinas.some(function(e) { return Math.abs(e.x - bx) < D + 4 && Math.abs(e.y - by) < D + 4; });
+      if (choca) bx += D + 6;
     }
+    esquinas.push({ x: bx, y: by });
 
-    // Cola triangular apuntando a la imagen, pegada al borde derecho
-    var cola = figma.createPolygon();
-    cola.pointCount = 3;
-    cola.resize(14, 18);
-    cola.fills = [{ type: 'SOLID', color: color }];
-    cola.rotation = -90;                    // el vértice mira a la derecha
-    overlay.appendChild(cola);
-
-    // Anclada SOBRE la imagen, apoyada en el borde izquierdo y cerca de arriba.
-    // Se sale un poco hacia afuera para que la cola apunte hacia adentro.
-    var px = b.x - 22;
-    var py = b.y + Math.min(28, b.height * 0.12);
-    pill.x = px;
-    pill.y = py;
-    cola.x = px + pill.width;
-    cola.y = py + (pill.height - 18) / 2 + 18;   // compensa la rotación
+    var nro = figma.createFrame();
+    nro.name = 'Nº ' + (idx + 1);
+    nro.resize(D, D);
+    nro.cornerRadius = D / 2;
+    nro.fills = [{ type: 'SOLID', color: color }];
+    nro.strokes = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+    nro.strokeWeight = 2;
+    nro.layoutMode = 'HORIZONTAL';
+    nro.primaryAxisAlignItems = 'CENTER';
+    nro.counterAxisAlignItems = 'CENTER';
+    nro.primaryAxisSizingMode = 'FIXED';
+    nro.counterAxisSizingMode = 'FIXED';
+    overlay.appendChild(nro);
+    var t = figma.createText();
+    t.fontName = { family: 'Inter', style: 'Bold' };
+    t.characters = String(idx + 1);
+    t.fontSize = 13;
+    t.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
+    nro.appendChild(t);
+    nro.x = bx; nro.y = by;
 
     puestas++;
   });
 
   return { overlay: overlay, puestas: puestas };
+}
+
+// La caja que encierra todas las imágenes (subidas a su pantalla), para pegar
+// la lista al lado aunque no haya nada seleccionado
+function cajaDeImagenes(imagenes) {
+  var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  imagenes.forEach(function(img) {
+    var n = null;
+    try { n = figma.getNodeById(img.nodeId); } catch (e) {}
+    while (n && n.parent && n.parent.type !== 'PAGE' && n.parent.type !== 'SECTION') n = n.parent;
+    if (!n || !n.absoluteBoundingBox) return;
+    var b = n.absoluteBoundingBox;
+    x0 = Math.min(x0, b.x); y0 = Math.min(y0, b.y);
+    x1 = Math.max(x1, b.x + b.width); y1 = Math.max(y1, b.y + b.height);
+  });
+  return isFinite(x0) ? { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } : null;
 }
 
 function pegarAnotacionesAlt(imagenes, rootNode) {
@@ -6761,7 +6777,7 @@ function pegarAnotacionesAlt(imagenes, rootNode) {
   }
 
   var W = 460;
-  var ab = rootNode && rootNode.absoluteBoundingBox ? rootNode.absoluteBoundingBox : null;
+  var ab = rootNode && rootNode.absoluteBoundingBox ? rootNode.absoluteBoundingBox : cajaDeImagenes(imagenes);
   var doc = crearDocumento(name, W, {
     x: ab ? ab.x + ab.width + 64 : freeSpotOnCanvas().x,
     y: ab ? ab.y : freeSpotOnCanvas().y
@@ -6770,7 +6786,9 @@ function pegarAnotacionesAlt(imagenes, rootNode) {
   var d = abrirSeccion(doc, 'Portada', 36, 24);
   d.texto('Textos alternativos', 24, true, RP.ink, { gap: 5 });
   d.texto((rootNode ? rootNode.name + '   ·   ' : '') + imagenes.length +
-          ' imágenes   ·   WCAG 1.1.1', 11.5, false, RP.muted, { gap: 0 });
+          ' imágenes   ·   WCAG 1.1.1', 11.5, false, RP.muted, { gap: 8 });
+  d.texto('El número es el de la imagen en el diseño. Azul: tiene alt · Verde: decorativa · Rojo: falta.',
+          10.5, false, RP.muted, { gap: 0 });
   cerrarSeccion(d);
 
   imagenes.forEach(function(img, idx) {
@@ -6781,14 +6799,28 @@ function pegarAnotacionesAlt(imagenes, rootNode) {
 
     var decorativa = (img.alt === '[decorativa]') || (!img.alt && img.decorativa);
 
-    ds.texto((idx + 1) + '.  ' + img.name, 13, true, RP.ink, { gap: 4 });
-    ds.texto(img.width + '×' + img.height + 'px', 10, false, RP.muted, { gap: 10 });
+    // El número en un círculo del mismo color que el recuadro de la imagen
+    var nroD = figma.createEllipse();
+    nroD.resize(26, 26); nroD.x = 60; nroD.y = yCaja + 16;
+    nroD.fills = [{ type: 'SOLID', color: colorDeAlt(img) }];
+    ds.f.appendChild(nroD);
+    var nroT = figma.createText();
+    nroT.fontName = { family: 'Inter', style: 'Bold' };
+    nroT.characters = String(idx + 1);
+    nroT.fontSize = 12;
+    nroT.fills = [{ type: 'SOLID', color: RP.blanco }];
+    nroT.textAlignHorizontal = 'CENTER';
+    nroT.textAutoResize = 'NONE';
+    nroT.resize(26, 15);
+    nroT.x = 60; nroT.y = yCaja + 16 + 5;
+    ds.f.appendChild(nroT);
+    ds.col = { x: 60 + 36, w: ds.w - 32 - 36 };
+
+    ds.texto(String(img.name).replace(/\s*\[(alt:[^\]]*|decorativa)\]\s*$/, ''), 13, true, RP.ink, { gap: 10 });
 
     if (decorativa) {
       ds.texto('Decorativa', 11, true, RP.teal, { gap: 4 });
-      ds.texto('alt=""', 12, false, RP.ink, { gap: 6 });
-      ds.texto('No aporta información que el texto no diga ya. Con alt vacío el lector la ' +
-               'saltea, que es lo correcto: describirla sería ruido.', 10.5, false, RP.muted, { gap: 0 });
+      ds.texto('alt=""  ·  el lector la saltea', 12, false, RP.ink, { gap: 0 });
     } else if (img.alt) {
       ds.texto('Texto alternativo', 10, true, RP.muted, { gap: 4 });
       ds.texto('alt="' + img.alt + '"', 12, false, RP.ink, { gap: 0 });
@@ -6798,6 +6830,7 @@ function pegarAnotacionesAlt(imagenes, rootNode) {
                11, false, RP.muted, { gap: 4 });
       if (img.motivo) ds.texto(img.motivo, 10.5, false, RP.muted, { gap: 0 });
     }
+    ds.col = { x: 44 + 16, w: ds.w - 32 };
 
     ds.y += 16;
     var bg = ds.rect(44, yCaja, ds.w, ds.y - yCaja,

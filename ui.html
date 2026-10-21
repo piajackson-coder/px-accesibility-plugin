@@ -324,6 +324,35 @@
   .fo-grip{color:#4A4A54;font-size:13px;flex-shrink:0}
   .fo-why{font-size:10px;color:var(--dim);padding-left:50px;margin-top:5px;line-height:1.5}
 
+  .ar-intro{display:flex;gap:8px;align-items:flex-start;font-size:11px;color:var(--muted);line-height:1.5;margin:0 0 10px}
+  .ar-intro svg{width:14px;height:14px;flex-shrink:0;margin-top:1px}
+  .ar-oye{display:flex;align-items:center;gap:7px;font-size:12px;color:var(--text-2);margin:2px 0 8px;flex-wrap:wrap}
+  .ar-oye svg{width:14px;height:14px;color:var(--muted)}
+  .ar-oye span{color:var(--muted)}
+  .ar-oye q{quotes:'«' '»';font-weight:700;color:var(--text)}
+  .ar-oye.hoy q{color:var(--fail-text)}
+  .ar-oye.hoy svg{color:var(--fail-text)}
+  .ar-oye.va q{color:var(--pass-text)}
+  .ar-q{display:block;font-size:11px;font-weight:700;color:var(--text);margin:0 0 5px}
+  .ar-falta{display:flex;gap:7px;font-size:11px;line-height:1.5;color:var(--text-2);margin:0 0 8px}
+  .ar-falta svg{width:13px;height:13px;flex-shrink:0;margin-top:2px;color:var(--warn-text)}
+  .ar-falta em{font-style:normal;color:var(--muted)}
+  .ar-dev summary{display:flex;align-items:center;gap:6px;cursor:pointer;list-style:none;font-size:10.5px;
+                  font-weight:700;color:var(--muted);padding:2px 0}
+  .ar-dev summary::-webkit-details-marker{display:none}
+  .ar-dev summary .caret{display:flex;transition:transform .15s}
+  .ar-dev[open] summary .caret{transform:rotate(180deg)}
+  .ar-dev[open] summary{margin-bottom:7px}
+  .ar-dev summary:focus-visible{outline:2px solid var(--blue);outline-offset:2px;border-radius:4px}
+  .ar-lhd{gap:8px}
+  .ar-all{display:flex;align-items:center;gap:7px;cursor:pointer;flex:1;min-width:0}
+  .ar-ord{display:flex;border:1px solid var(--line);border-radius:6px;overflow:hidden}
+  .ar-ord button{background:transparent;border:0;color:var(--muted);font-family:var(--font);font-size:10px;
+                 font-weight:700;padding:4px 8px;cursor:pointer;text-transform:none;letter-spacing:0}
+  .ar-ord button.on{background:var(--inv);color:var(--inv-text)}
+  .ar-hint{font-size:10.5px;color:var(--dim);line-height:1.5;margin:-4px 0 12px}
+  .ar-mas-n{font-style:normal;color:var(--dim);margin-left:4px}
+  .ar-mas-p{font-size:10.5px;color:var(--muted);margin:0 0 6px;line-height:1.5}
   /* ── ARIA ── */
   .ar-item{padding:12px;border-bottom:1px solid var(--line-soft)}
   .ar-item:last-child{border-bottom:none}
@@ -549,8 +578,8 @@
              text-transform:uppercase;color:var(--dim);margin-bottom:3px}
   .ar-name b{font-size:13px;font-weight:700}
   .ar-name em{display:block;font-style:normal;font-size:10px;color:var(--dim);margin-top:2px}
-  .ar-todo{font-size:11.5px;line-height:1.6;color:var(--text-2);padding:9px 11px;
-           background:rgba(var(--ov),.035);border-radius:7px;margin-bottom:7px}
+  .ar-todo{font-size:11px;line-height:1.7;color:var(--muted);padding:2px 2px 0;margin-bottom:4px}
+  .ar-todo b{color:var(--text-2);font-weight:700;margin-right:4px}
   .ar-req{font-size:10.5px;line-height:1.7;color:var(--muted);margin-bottom:7px}
   .ar-req span{display:inline-block;min-width:78px;font-weight:800;font-size:9px;
                letter-spacing:.7px;text-transform:uppercase;color:var(--dim)}
@@ -682,9 +711,41 @@
   .pair-loc{margin:0 0 10px}
 
 
+  .alt-top{display:flex;gap:10px;align-items:flex-start;margin-bottom:9px}
+  .alt-th{width:56px;height:56px;border-radius:7px;overflow:hidden;flex-shrink:0;border:1px solid var(--line);
+          background:rgba(var(--ov),.05);display:flex;align-items:center;justify-content:center}
+  .alt-th img{max-width:100%;max-height:100%;display:block}
+  .alt-th-v{width:100%;height:100%}
+  .alt-meta{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+  .alt-meta .alt-nm{flex:none;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .alt-est{font-size:10.5px;font-weight:700;color:var(--warn-text);display:flex;align-items:center;gap:4px}
+  .alt-est.hecho{color:var(--pass-text)}
+  .alt-est svg{width:11px;height:11px}
+  .alt-meta .alt-mot{margin:0}
+  .alt-elige{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden;margin-bottom:8px}
+  .alt-elige button{flex:1;background:transparent;border:0;color:var(--muted);font-family:var(--font);
+                    font-size:11.5px;font-weight:700;padding:7px 8px;cursor:pointer}
+  .alt-elige button + button{border-left:1px solid var(--line)}
+  .alt-elige button.on{background:var(--inv);color:var(--inv-text)}
+  .alt-elige button:focus-visible{outline:2px solid var(--blue);outline-offset:-2px}
+  .alt-guia{border:1px solid var(--line);border-radius:var(--r);margin:0 0 10px;padding:9px 12px}
+  .alt-guia summary{display:flex;align-items:center;justify-content:space-between;cursor:pointer;list-style:none;
+                    font-size:11.5px;font-weight:700;color:var(--text-2)}
+  .alt-guia summary::-webkit-details-marker{display:none}
+  .alt-guia summary .caret{display:flex;transition:transform .15s}
+  .alt-guia[open] summary .caret{transform:rotate(180deg)}
+  .alt-guia-b{font-size:11px;line-height:1.55;color:var(--text-2);padding-top:9px}
+  .alt-guia-b b{color:var(--text)}
+  .alt-guia-b span{color:var(--muted)}
+  .alt-guia-b ul{margin:4px 0 10px;padding-left:17px}
+  .alt-guia-b a{color:var(--link);font-size:10.5px}
+  .alt-sinkey{display:flex;gap:7px;font-size:11px;line-height:1.5;color:var(--muted);margin:0 0 12px}
+  .alt-sinkey svg{width:13px;height:13px;flex-shrink:0;margin-top:2px}
+  .alt-iatodas{margin:0 0 12px}
+  .alt-ac .linkbtn{font-size:11px}
   .alt-i.deco{opacity:.8}
-  .alt-deco{font-size:11px;line-height:1.6;color:var(--teal);padding:9px 11px;
-            background:rgba(53,210,192,.1);border-radius:7px;display:flex;gap:7px;align-items:flex-start}
+  .alt-deco{font-size:11px;line-height:1.6;color:var(--muted);padding:0 2px 2px;margin:0;
+            display:block}
   .alt-deco svg{width:14px;height:14px;flex-shrink:0;margin-top:1px}
   .alt-deco b{color:var(--text)}
   .alt-ac .on{border-color:var(--teal);color:var(--teal)}
@@ -1073,12 +1134,7 @@
   .ty-tok.bad span{color:var(--fail-text)}
   .ty-fix{padding:9px 12px;font-size:11.5px;color:var(--warn-text);background:rgba(255,184,0,.06);
           border-bottom:1px solid var(--line-soft);line-height:1.55}
-  .ty-x{margin-left:auto;background:transparent;border:1px solid transparent;color:var(--muted);border-radius:6px;
-        width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
-  .ty-x:hover{border-color:var(--line);color:var(--text)}
   .ty-grp{margin-bottom:12px}
-  .ty-row.oculto{opacity:.45}
-  .ty-vo{display:block;margin:0 0 14px;font-size:11.5px}
 
   /* ARIA: nombre editable */
   .ar-edit{width:100%;margin:5px 0 4px;padding:8px 10px;border-radius:7px;border:1px solid rgba(201,169,255,.5);
@@ -1282,14 +1338,16 @@
 // Versión del plugin. Como los plugins locales no se actualizan solos, la
 // versión y la fecha quedan a la vista y se dice dónde chequear si hay una
 // nueva. Sin esto nadie sabe qué está corriendo.
-var VERSION = 'v1.2.3';
+var VERSION = 'v1.2.4';
 
 // El cuentagotas del sistema (el de la lupa, que toma de toda la pantalla)
 // solo existe si el panel tiene dirección web. Figma carga este HTML sin
 // dirección, así que para el cuentagotas el panel se recarga desde una copia
 // publicada de este mismo archivo, de la misma versión. Es lo que hace Stark.
 var UI_WEB = 'https://piajackson-coder.github.io/px-accesibility-plugin/v/' + VERSION + '/ui.html';
-var EN_WEB = /^https?:$/.test(location.protocol);
+// Ojo: Figma puede cargar el panel normal desde una dirección https pero con
+// origen anónimo ("null"). Ese NO es la copia web: lo que cuenta es el origen.
+var EN_WEB = /^https?:$/.test(location.protocol) && !!location.origin && location.origin !== 'null';
 var VERSION_FECHA = '2026-10-21';
 var VERSION_REPO = 'GitHub';
 // Cuando exista, poné acá la URL del repo (https://github.com/…) y el pie
@@ -1306,6 +1364,14 @@ document.addEventListener('click', function(ev){
 
 // Lo que cambió en cada versión. Se muestra en Ayuda → Novedades.
 var CHANGELOG = [
+  { v:'v1.2.4', fecha:'2026-10-21', items:[
+    'Textos alternativos: miniatura de cada imagen, una decisión ("Decorativa" o "Aporta información") y la guía de la W3C. Una imagen que es lo único de un botón ya no se marca decorativa.',
+    'Textos alternativos en el canvas: un recuadro de color y un número en cada imagen, y al lado la lista con el mismo número. Ya no se pisan.',
+    'Textos alternativos: con API key, la IA mira las imágenes que faltan y propone el texto, o te dice si es decorativa.',
+    'Etiquetas ARIA, para quien las usa por primera vez: cada control muestra qué dice el lector de pantalla, y si no se entiende, escribís qué hace ahí mismo. El código para el dev va plegado.',
+    'Tipografía: cada texto a revisar tiene su "Ver en el canvas" (reemplaza al botón de ocultar).',
+    'Arreglo: el panel podía quedar sin respuesta al abrir ("code.js no respondió al arranque").'
+  ]},
   { v:'v1.2.3', fecha:'2026-10-21', items:[
     'Cuentagotas como en Stark: el mouse se vuelve el cuentagotas del sistema, con lupa, y toma el color de cualquier parte de la pantalla.',
     'Tipografía: un texto de menos de 12px ya no queda escondido en "Mejoras opcionales": sale arriba como muy chico para leer.',
@@ -1370,8 +1436,7 @@ var S = {
   manualFg: null, manualBg: null,
   // v1.1
   modoColor: 'sistema', sistema: null, modoCard: {}, recOpen: {}, mxVista: 'tabla', mxFiltro: 'all',
-  typoOcultos: {}, typoVerOcultos: false,
-  altDraft: {}, imagenesFrame: '', aiKey: '', aiBusy: {},
+  altDraft: {}, altElige: {}, altThumb: {}, imagenesFrame: '', aiKey: '', aiBusy: {},
   ariaAgrupar: 'orden', ariaNombre: {},
   auditEstimate: null, auditProgress: null, auditInicio: 0,
   pintando: null,
@@ -1561,6 +1626,7 @@ var I = {
   x:        svg('<path d="M18 6L6 18M6 6l12 12"/>'),
   approx:   svg('<path d="M3 9c2.5-3 5-3 7.5 0S15.5 12 18 9M3 15c2.5-3 5-3 7.5 0s5 3 7.5 0"/>'),
   dot:      '<span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:currentColor;flex-shrink:0"></span>',
+  voz:      svg('<path d="M11 5L6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 010 7M18.5 5.5a9 9 0 010 13"/>'),
   pipette:  svg('<path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 113 3L18 9l.4.4a2.1 2.1 0 11-3 3l-3.8-3.8a2.1 2.1 0 113-3l.4.4z"/>'),
   swap:     svg('<path d="M7 7h13l-4-4M17 17H4l4 4"/>'),
   refresh:  svg('<path d="M21 12a9 9 0 11-2.6-6.4M21 3v6h-6"/>'),
@@ -2511,22 +2577,12 @@ function renderType(){
     helpBlock('type');
 
   wireHelp(el); wireNodes('s-type');
-  el.querySelectorAll('[data-ocultar]').forEach(function(b){
-    b.onclick = function(ev){
-      ev.stopPropagation();
-      var k = b.dataset.ocultar;
-      if (S.typoOcultos[k]) delete S.typoOcultos[k]; else S.typoOcultos[k] = true;
-      render();
-    };
-  });
-  var vo = el.querySelector('[data-ver-ocultos]');
-  if (vo) vo.onclick = function(){ S.typoVerOcultos = !S.typoVerOcultos; render(); };
 }
 
 // Los problemas agrupados por TIPO, con el arreglo dicho una vez por grupo.
 // Antes la misma frase "Interlineado de 20px para fuente de 14px" se repetía en
 // cada fila y había que leer nueve veces lo mismo para entender una sola cosa.
-// Cada fila se puede ocultar: hay casos que se decidieron así a propósito.
+// Cada fila lleva su "Ver en el canvas" para ir directo al texto.
 function gruposTipo(items){
   if (!items.length) return '';
   var grupos = {}, orden = [];
@@ -2539,34 +2595,24 @@ function gruposTipo(items){
       grupos[k].filas.push({ i:i, p:p, clave:i.nodeId+'|'+k });
     });
   });
-  var ocultas = 0;
-  var html = orden.map(function(k){
-    var g = grupos[k];
-    var filas = g.filas.filter(function(f){
-      var oc = !!S.typoOcultos[f.clave];
-      if (oc) ocultas++;
-      return !oc || S.typoVerOcultos;
-    });
+  return orden.map(function(k){
+    var g = grupos[k], filas = g.filas;
     if (!filas.length) return '';
     var riesgo = g.t.riesgo !== false && g.t.k !== 'otros';
     return '<div class="list ty-grp"><div class="list-hd"><span>'+esc(g.t.txt(filas.length))+'</span>'+
       (g.t.wcag && g.t.wcag !== 'legibilidad' ? '<span class="wcag">'+esc(g.t.wcag)+'</span>' : '')+
-      '<span class="chip '+(riesgo?'c-warn':'c-mut')+'">'+(riesgo?'RIESGO WCAG':'RECOMENDACIÓN')+'</span></div>'+
+      '<span class="chip '+(riesgo||k==='chico'?'c-warn':'c-mut')+'">'+(riesgo?'RIESGO WCAG':(k==='chico'?'A REVISAR':'RECOMENDACIÓN'))+'</span></div>'+
       (g.t.fix ? '<div class="ty-fix">'+esc(g.t.fix)+'</div>' : '')+
       filas.map(function(f){
-        var i = f.i, oc = !!S.typoOcultos[f.clave];
-        return '<div class="ty-row'+(oc?' oculto':'')+'" data-node="'+esc(i.nodeId)+'">'+
+        var i = f.i;
+        return '<div class="ty-row" data-node="'+esc(i.nodeId)+'">'+
           '<span class="ty-size">'+(i.size!=null?i.size+'px':'?')+'</span>'+
           '<span class="ty-txt">'+esc(i.text || i.nodeName)+
           '<span class="ty-sub"> · '+esc(k === 'otros' ? f.p.text : (i.style||'—'))+'</span></span>'+
-          '<button class="ty-x" data-ocultar="'+esc(f.clave)+'" title="'+(oc?'Volver a mostrar':'Ocultar esta sugerencia')+'" '+
-          'aria-label="'+(oc?'Volver a mostrar':'Ocultar')+' la sugerencia de '+esc(i.text || i.nodeName)+'">'+
-          (oc ? I.eye : I.eyeOff)+'</button></div>';
+          '<button class="loc" data-node="'+esc(i.nodeId)+'" '+
+          'aria-label="Ver '+esc(i.text || i.nodeName)+' en el canvas">'+I.pointer+' Ver en el canvas</button></div>';
       }).join('')+'</div>';
   }).join('');
-  if (ocultas) html += '<button class="linkbtn ty-vo" data-ver-ocultos="1">'+
-    (S.typoVerOcultos ? 'Esconder las '+ocultas+' sugerencias ocultas' : ocultas+' sugerencia'+(ocultas===1?'':'s')+' oculta'+(ocultas===1?'':'s')+' · mostrar')+'</button>';
-  return html;
 }
 
 function wireNodes(id){
@@ -2775,6 +2821,28 @@ function ariaPorTipo(A, itemsHtml){
   }).join('');
 }
 
+// Cómo lo nombra el lector: "botón", "pestaña", "casilla"…
+function rolHablado(a){
+  var m = { 'Enlace':'enlace', 'Casilla de verificación':'casilla', 'Opción de radio':'botón de opción',
+            'Combo / Select':'lista desplegable', 'Diálogo / Modal':'diálogo', 'Diálogo de confirmación':'diálogo',
+            'Lista de opciones':'lista', 'Ítem de menú':'opción de menú', 'Panel de pestaña':'panel',
+            'Barra de progreso':'barra de progreso', 'Mensaje de estado':'estado', 'Ícono decorativo':'imagen' };
+  var l = a.patronLabel || '';
+  if (m[l]) return m[l];
+  if (l && l !== 'Control') return l.toLowerCase();
+  return a.nativo === '<a>' ? 'enlace' : 'botón';
+}
+
+function estadosHablados(estados){
+  var m = { 'aria-selected':'si está seleccionado', 'aria-expanded':'si está abierto o cerrado',
+            'aria-checked':'si está marcado', 'aria-pressed':'si está activado',
+            'aria-current':'si es la página actual', 'aria-valuenow':'su valor actual',
+            'aria-invalid':'si tiene un error', 'aria-disabled':'si está deshabilitado' };
+  var t = (estados || []).map(function(e){ return m[e] || 'en qué estado está'; })
+    .filter(function(x, i, arr){ return arr.indexOf(x) === i; });
+  return t.length ? t.join(' y ') : 'en qué estado está';
+}
+
 function renderAria(){
   var el = document.getElementById('s-aria');
   if (S.sel.count === 0){
@@ -2793,147 +2861,126 @@ function renderAria(){
     wireHelp(el); return;
   }
 
-  var picked = A.items.filter(function(it){ return S.ariaPicked[it.nodeId]; }).length;
-
+  // Pensado para quien abre esto por primera vez y no sabe qué es ARIA: lo
+  // que importa es qué va a ESCUCHAR la persona con lector de pantalla, si se
+  // entiende, y qué tiene que hacer quien diseña. El código es para el dev y
+  // va plegado.
   var items = A.items.map(function(it){
     var a = it.aria;
-    var on = !!S.ariaPicked[it.nodeId];
-
-    // Solo lo que un dev necesita para implementarlo: el nombre, el código y la
-    // instrucción. Las reglas de ARIA y los errores del patrón se sacaron: eran
-    // material de lectura, no de handoff, y enterraban lo accionable.
-    // Cuando no hay nombre, o varios controles quedarían con el mismo, el
-    // nombre se escribe acá mismo y viaja así a la hoja del canvas.
+    var rol = rolHablado(a);
     var editable = !a.accessibleName || a.repetida;
     var valorNombre = S.ariaNombre[it.nodeId] != null ? S.ariaNombre[it.nodeId]
                     : (a.accessibleName || a.nombreSugerido || '');
-    var nombre = !editable
-      ? '<div class="ar-name"><span class="ar-name-l">Nombre accesible</span>'+
-        '<b>"'+esc(a.accessibleName)+'"</b></div>'
-      : '<div class="ar-name falta"><label class="ar-name-l" for="an-'+esc(it.nodeId)+'">'+
-        (a.accessibleName ? 'Nombre accesible — se repite, diferencialo' : 'Nombre accesible — propuesto')+'</label>'+
-        '<input class="ar-edit" id="an-'+esc(it.nodeId)+'" data-nombre="'+esc(it.nodeId)+'" value="'+esc(valorNombre)+'" '+
-        'placeholder="Describí la acción: Editar dirección de envío">'+
-        '<em>'+(S.ariaNombre[it.nodeId] != null ? 'editado: así va a la hoja del canvas'
-                : 'escribilo vos: el plugin propone, no decide')+'</em></div>';
+    var motivo = it.porQue ? it.porQue.motivo : '';
 
-    var extra = [];
-    if (a.estados && a.estados.length) extra.push('Estados: '+a.estados.map(esc).join(', '));
-    if (a.props && a.props.length)     extra.push('Propiedades: '+a.props.map(esc).join(', '));
-    if (a.teclado)                     extra.push('Teclado: '+esc(a.teclado));
+    var oye;
+    if (!a.accessibleName) {
+      oye = '<div class="ar-oye hoy">'+I.voz+'<span>Hoy dice</span><q>'+esc(rol)+'</q></div>'+
+        '<label class="ar-q" for="an-'+esc(it.nodeId)+'">¿Qué hace? Escribilo como una acción</label>'+
+        '<input class="ar-edit" id="an-'+esc(it.nodeId)+'" data-nombre="'+esc(it.nodeId)+'" data-rol="'+esc(rol)+'" '+
+        'value="'+esc(valorNombre)+'" placeholder="Por ejemplo: Cerrar">'+
+        '<div class="ar-oye va" data-va="'+esc(it.nodeId)+'">'+I.voz+'<span>Va a decir</span><q>'+
+          esc((valorNombre ? valorNombre + ', ' : '') + rol)+'</q></div>';
+    } else {
+      oye = '<div class="ar-oye">'+I.voz+'<span>Dice</span><q>'+esc(a.accessibleName + ', ' + rol)+'</q></div>';
+      if (a.repetida) oye +=
+        '<label class="ar-q" for="an-'+esc(it.nodeId)+'">Hay '+a.repetida+' que suenan igual: diferencialos</label>'+
+        '<input class="ar-edit" id="an-'+esc(it.nodeId)+'" data-nombre="'+esc(it.nodeId)+'" data-rol="'+esc(rol)+'" '+
+        'value="'+esc(valorNombre)+'">';
+    }
 
-    return '<div class="ar-item" data-grupo-tipo="'+esc((a.patronLabel||'Control')+'|'+(a.role||a.nativo||''))+'"><div class="ar-hd">'+
-      '<input type="checkbox" class="pickbox" data-pick="'+esc(it.nodeId)+'"'+(on?' checked':'')+'>'+
-      '<span class="ar-nm">'+esc(it.name)+'</span>'+
-      (a.patronLabel ? '<span class="chip" style="background:rgba(140,49,232,.18);color:var(--purple-text)">'+
-        esc(a.patronLabel)+'</span>' : '')+
-      (a.repetida ? '<span class="chip c-warn">'+a.repetida+' con el mismo nombre</span>' : '')+
-      (a.role ? '<span class="chip c-mut">role='+esc(a.role)+'</span>'
-              : (a.nativo ? '<span class="chip c-mut">'+esc(a.nativo)+'</span>' : ''))+
-      '<button class="loc" data-node="'+esc(it.nodeId)+'" title="Ver en el canvas">'+
-      I.pointer+' Localizar</button>'+
-      '</div>'+
-      (it.porQue ? '<div class="ar-why"><b>'+esc({
-        'sin nombre':'Necesita nombre accesible',
-        'estado':'Necesita estado ARIA',
-        'rol':'Necesita rol declarado',
-        'propiedades':'Necesita propiedades del patrón',
-        'región viva':'Necesita región viva'
-      }[it.porQue.motivo] || it.porQue.motivo)+'.</b> '+esc(it.porQue.razon)+'</div>' : '')+
-      nombre +
-      '<div class="ar-code">'+esc(a.snippet || '')+'</div>'+
-      (a.instruccion ? '<div class="ar-todo">'+esc(a.instruccion)+'</div>' : '')+
-      (extra.length ? '<div class="ar-req">'+extra.map(function(e){
-        return '<div>'+e+'</div>'; }).join('')+'</div>' : '')+
+    // Lo que no resuelve quien diseña, en una frase: va en la anotación
+    var falta = '';
+    if (motivo === 'estado') falta = 'También tiene que avisar '+estadosHablados(a.estados)+'.';
+    else if (motivo === 'rol') falta = 'No hay un elemento HTML para esto: el dev lo arma a mano.';
+    else if (motivo === 'propiedades') falta = 'El dev tiene que conectarlo con lo que controla.';
+    else if (motivo === 'región viva') falta = 'Cambia solo: el lector tiene que avisarlo sin interrumpir.';
+
+    var dev = [];
+    if (a.role) dev.push('<b>Custom</b> role="'+esc(a.role)+'" y tabindex="0"');
+    else if (a.nativo) dev.push('<b>Usá '+esc(a.nativo)+'</b> trae rol, foco y teclado');
+    if (a.estados && a.estados.length) dev.push('<b>El JS actualiza</b> '+a.estados.map(esc).join(', '));
+    if (a.role && a.teclado) dev.push('<b>Teclado</b> '+esc(String(a.teclado).replace(/\.+\s*$/, '')));
+
+    return '<div class="ar-item" data-grupo-tipo="'+esc((a.patronLabel||'Control')+'|'+(a.role||a.nativo||''))+'">'+
+      '<div class="ar-hd"><span class="ar-nm">'+esc(it.name)+'</span>'+
+      '<button class="loc" data-node="'+esc(it.nodeId)+'" aria-label="Ver '+esc(it.name)+' en el canvas">'+
+      I.pointer+' Ver en el canvas</button></div>'+
+      oye +
+      (falta ? '<div class="ar-falta">'+I.info+'<span>'+esc(falta)+' <em>Lo hace el dev: queda en la anotación.</em></span></div>' : '')+
+      '<details class="ar-dev"><summary>Para el dev<span class="caret">'+I.chevron+'</span></summary>'+
+        '<div class="ar-code">'+esc(a.snippet || '')+'</div>'+
+        (dev.length ? '<div class="ar-todo">'+dev.map(function(d){ return '<div>'+d+'</div>'; }).join('')+'</div>' : '')+
+      '</details>'+
       '</div>';
   }).join('');
 
   var faltan = A.items.filter(function(i){ return i.aria.needsLabel; }).length;
+  var nRes = (A.resueltos || []).length, nDesc = (A.descartados || []).length, nGr = (A.grupos || []).length;
 
-  el.innerHTML =
-    (A.resueltos && A.resueltos.length
-      ? '<div class="note note-pass"><span>'+I.check+'</span><div>'+
-        '<b>'+A.resueltos.length+' de '+(A.totalControles||0)+' controles ya están resueltos.</b> '+
-        'Tienen texto visible y no manejan estado: con <b>&lt;button&gt;</b> y <b>&lt;a&gt;</b> '+
-        'nativos alcanza, no hay nada que anotar.'+
-        '</div></div>'
-      : '')+
- hiddenNote(A.hiddenSkipped) +
-    (faltan ? '<div class="note note-fail"><span>'+I.warn+'</span><div><b>'+faltan+' control(es) sin nombre accesible.</b> '+
-      'Es lo único que bloquea el handoff: un lector de pantalla lee "botón" y nada más.</div></div>' : '')+
-    (A.grupos && A.grupos.length
-      ? '<div class="note note-mut"><span>'+I.layers+'</span><div>'+
-        '<b>'+A.grupos.length+' componente'+(A.grupos.length===1?'':'s')+' repetido'+
-        (A.grupos.length===1?'':'s')+'.</b> Las instancias comparten una sola especificación: '+
-        'el handoff describe el componente, no cada aparición.'+
-        A.grupos.map(function(g){
-          return '<div class="grp"><div class="grp-t">'+esc(g.patronLabel||'Control')+
-            ' <span class="chip c-mut">'+g.marcadores.length+' instancias</span>'+
-            '<span class="grp-n">'+g.marcadores.join(', ')+'</span></div>'+
-            (g.accessibleName
-              ? '<div class="grp-l">'+(g.esPlantilla?'Plantilla: ':'Nombre: ')+
-                '<b>"'+esc(g.accessibleName)+'"</b></div>' : '')+
-            '</div>'; }).join('')+
-        '</div></div>'
-      : '')+
-    (A.descartados && A.descartados.length
-      ? '<div class="acc'+(S.showDesc?' open':'')+'" style="margin-bottom:12px">'+
-        '<button class="acc-hd" data-desc="1"><span>'+A.descartados.length+
-        ' elementos sin ARIA propio — por qué</span><span class="caret">'+I.chevron+'</span></button>'+
-        '<div class="acc-bd">'+
-        '<p style="margin-top:12px">El plugin no propone ARIA para estos. Si alguno sí es un '+
-        'control, conectale el prototipo o renombrá la capa y volvé a analizar.</p>'+
+  var intro = '<p class="ar-intro">'+I.voz+'<span>Quien no ve la pantalla usa un lector que dice cada control en voz alta. '+
+    'Acá ves qué va a escuchar.</span></p>';
+
+  var veredicto = !A.items.length
+    ? '<div class="c-res aviso"><span class="c-res-ic">'+I.warn+'</span><div class="c-res-t">'+
+      '<b>No encontramos controles.</b> Conectá el prototipo o renombrá las capas y volvé a analizar.</div></div>'
+    : faltan
+    ? '<div class="c-res mal"><span class="c-res-ic">'+I.warn+'</span><div class="c-res-t">'+
+      '<b>'+faltan+' control'+(faltan===1?' no se entiende':'es no se entienden')+'.</b> '+
+      (faltan===1 ? 'Solo tiene un ícono: escribí qué hace.' : 'Solo tienen un ícono: escribí qué hace cada uno.')+'</div></div>'
+    : '<div class="c-res"><span class="c-res-ic">'+I.check+'</span><div class="c-res-t">'+
+      '<b>Todos se entienden.</b> Anotalos para que el dev sepa cómo programarlos.</div></div>';
+
+  var lista = A.items.length
+    ? '<div class="list"><div class="list-hd"><span>Controles <em class="ar-mas-n">'+A.items.length+'</em></span></div>'+
+        (S.ariaAgrupar === 'tipo' ? ariaPorTipo(A, items) : items)+
+      '</div>'
+    : '';
+
+  var mas = (nRes || nDesc || nGr || A.items.length)
+    ? '<div class="acc'+(S.showDesc?' open':'')+'" style="margin-bottom:12px">'+
+      '<button class="acc-hd" data-desc="1"><span>Lo que ya está bien'+
+        (nRes+nDesc ? ' <em class="ar-mas-n">'+(nRes+nDesc)+'</em>' : '')+' y opciones</span><span class="caret">'+I.chevron+'</span></button>'+
+      '<div class="acc-bd">'+
+      (nRes ? '<div class="c-sec">Ya se entienden <em>'+nRes+'</em></div>'+
+        '<p class="ar-mas-p">Tienen texto visible: el lector dice ese texto. No hay nada que hacer.</p>'+
+        A.resueltos.map(function(r){
+          return '<div class="desc-i" data-node="'+esc(r.nodeId)+'"><div class="desc-n">'+esc(r.name)+'</div></div>'; }).join('') : '')+
+      (nDesc ? '<div class="c-sec">No son controles <em>'+nDesc+'</em></div>'+
+        '<p class="ar-mas-p">Si alguno sí lo es, conectale el prototipo o renombrá la capa.</p>'+
         A.descartados.map(function(d){
           return '<div class="desc-i" data-node="'+esc(d.nodeId)+'">'+
-            '<div class="desc-n">'+esc(d.name)+'<span class="chip c-mut">'+esc(d.motivo)+'</span></div>'+
-            '<div class="desc-t">'+esc(d.texto)+'</div></div>'; }).join('')+
-        '</div></div>'
-      : '')+
-    (A.items.length
-      ? '<div class="note note-mut"><span>'+I.info+'</span><div>'+
-        '<b>Cómo se manda esto a desarrollo:</b> elegí los controles, apretá <b>Anotar</b> '+
-        'y el plugin escribe dos cosas en el archivo — etiquetas al costado de cada control, '+
-        'y una hoja de especificación a la derecha de la página con la lista completa. '+
-        'El dev abre el archivo y lee de ahí: no necesita el plugin ni un doc aparte.</div></div>'+
-        '<div class="selbar"><span style="flex:1"><b>'+picked+'</b> de '+A.items.length+' elegidos para anotar</span>'+
-        '<button data-all="1">Todos</button><button data-all="0">Ninguno</button></div>'+
-        // Al dev le sirve agarrar todos los tabs juntos, después todos los
-        // botones: el orden en pantalla importa menos que el tipo de control.
-        '<div class="seg-label">Ordenar la especificación</div>'+
-        '<div class="seg2" style="margin-bottom:12px" role="radiogroup" aria-label="Ordenar la especificación">'+
-          '<button role="radio" aria-checked="'+(S.ariaAgrupar==='orden')+'" class="'+(S.ariaAgrupar==='orden'?'on':'')+'" data-agr="orden">Orden en pantalla</button>'+
+            '<div class="desc-n">'+esc(d.name)+'<span class="chip c-mut">'+esc(d.motivo)+'</span></div></div>'; }).join('') : '')+
+      (nGr ? '<div class="c-sec">Componentes repetidos <em>'+nGr+'</em></div>'+
+        '<p class="ar-mas-p">Se anotan una sola vez.</p>'+
+        A.grupos.map(function(g){
+          return '<div class="grp"><div class="grp-t">'+esc(g.patronLabel||'Control')+
+            ' <span class="chip c-mut">'+g.marcadores.length+' veces</span></div></div>'; }).join('') : '')+
+      (A.items.length ? '<div class="c-sec">Orden de la hoja para el dev</div>'+
+        '<div class="ar-ord" role="radiogroup" aria-label="Orden de la hoja para el dev">'+
+          '<button role="radio" aria-checked="'+(S.ariaAgrupar==='orden')+'" class="'+(S.ariaAgrupar==='orden'?'on':'')+'" data-agr="orden">Como en pantalla</button>'+
           '<button role="radio" aria-checked="'+(S.ariaAgrupar==='tipo')+'" class="'+(S.ariaAgrupar==='tipo'?'on':'')+'" data-agr="tipo">Por tipo de control</button>'+
-        '</div>'+
-        (S.ariaAgrupar === 'tipo' ? ariaPorTipo(A, items)
-          : '<div class="list"><div class="list-hd"><span>Controles interactivos visibles</span>'+
-            '<span class="wcag">4.1.2</span></div>'+items+'</div>')
-      : '<div class="note note-warn"><span>'+I.warn+'</span><div><b>No se encontró ningún control.</b> '+
-        'Conectá el prototipo, usá variantes de estado, o renombrá la capa para que el plugin los reconozca.</div></div>')
-    + helpBlock('aria');
+        '</div>' : '')+
+      '</div></div>'
+    : '';
+
+  el.innerHTML = intro + veredicto + hiddenNote(A.hiddenSkipped) + lista + mas + helpBlock('aria');
 
   var dz = el.querySelector('[data-desc]');
   if (dz) dz.onclick = function(){ S.showDesc = !S.showDesc; render(); };
   el.querySelectorAll('[data-agr]').forEach(function(b){ b.onclick = function(){ S.ariaAgrupar = b.dataset.agr; render(); }; });
   el.querySelectorAll('[data-nombre]').forEach(function(inp){
     // Sin re-render al tipear: perdería el foco en cada letra
-    inp.oninput = function(){ S.ariaNombre[inp.dataset.nombre] = inp.value; };
+    inp.oninput = function(){
+      S.ariaNombre[inp.dataset.nombre] = inp.value;
+      var va = el.querySelector('[data-va="'+inp.dataset.nombre+'"] q');
+      if (va) va.textContent = (inp.value.trim() ? inp.value.trim() + ', ' : '') + inp.dataset.rol;
+    };
   });
-  el.querySelectorAll('.loc').forEach(function(b){
+  el.querySelectorAll('.loc, .desc-i[data-node]').forEach(function(b){
     b.onclick = function(ev){ ev.stopPropagation(); post({ type:'select-node', nodeId:b.dataset.node }); toast('Seleccionado en el canvas.'); };
   });
 
-  el.querySelectorAll('[data-pick]').forEach(function(c){
-    c.onchange = function(){ S.ariaPicked[c.dataset.pick] = c.checked; renderFooter();
-      var bar = el.querySelector('.selbar span b');
-      if (bar) bar.textContent = A.items.filter(function(i){ return S.ariaPicked[i.nodeId]; }).length; };
-  });
-  el.querySelectorAll('[data-all]').forEach(function(b){
-    b.onclick = function(){
-      var v = b.dataset.all === '1';
-      A.items.forEach(function(i){ S.ariaPicked[i.nodeId] = v; });
-      render();
-    };
-  });
   wireHelp(el);
 }
 
@@ -3491,61 +3538,84 @@ function renderAlt(){
     wireAlt(el); return;
   }
 
-  var conAlt = S.imagenes.filter(function(i){ return i.alt; }).length;
-  var borradores = S.imagenes.filter(function(i){ return tieneBorrador(i); }).length;
+  var listas = S.imagenes.filter(function(i){ return i.alt && !tieneBorrador(i); }).length;
+  var faltan = S.imagenes.length - listas;
   // Las imágenes siguen siendo las de la última búsqueda aunque se haya cambiado
   // la selección: se dice de qué frame son, para no editar las de otro creyendo
   // que son las de acá.
   var otroFrame = S.imagenesFrame && S.sel.count && S.sel.name && S.sel.name !== S.imagenesFrame;
 
+  var veredicto = faltan
+    ? '<div class="c-res aviso"><span class="c-res-ic">'+I.image+'</span><div class="c-res-t">'+
+      '<b>Faltan '+faltan+' de '+S.imagenes.length+'.</b> Mirá cada imagen y decidí: ¿es de adorno o aporta información?</div></div>'
+    : '<div class="c-res"><span class="c-res-ic">'+I.check+'</span><div class="c-res-t">'+
+      '<b>Todas decididas.</b> Pegalas en Figma para que el dev las vea.</div></div>';
+
+  // El árbol de decisión de la W3C, en criollo. Plegado: se abre la primera vez
+  // que hace falta y después estorba.
+  var guia = '<details class="alt-guia"'+(S.altGuia?' open':'')+'><summary>¿Cuándo es decorativa?<span class="caret">'+I.chevron+'</span></summary>'+
+    '<div class="alt-guia-b">'+
+      '<div><b>Decorativa</b> <span>va con alt vacío y el lector la saltea</span></div>'+
+      '<ul><li>Es un adorno: fondo, textura, borde, separador.</li>'+
+        '<li>Lo que muestra ya está escrito al lado.</li>'+
+        '<li>Está en un botón o link que ya tiene texto.</li>'+
+        '<li>Es una ilustración de relleno que no suma información.</li></ul>'+
+      '<div><b>Aporta información</b> <span>se describe en una frase</span></div>'+
+      '<ul><li>Tiene texto adentro que no está en otro lado: escribí ese texto.</li>'+
+        '<li>Es lo único de un botón o link: decí qué hace o adónde lleva.</li>'+
+        '<li>Muestra algo que importa (un producto, una persona, un gráfico): contá qué aporta; en un gráfico, el dato.</li></ul>'+
+      '<a href="https://www.w3.org/WAI/tutorials/images/decision-tree/" target="_blank" rel="noopener">Árbol de decisión de la W3C</a>'+
+    '</div></details>';
+
+  var pendientesIA = S.imagenes.filter(function(i){ return !i.alt && !S.aiBusy[i.nodeId]; }).length;
+  var ia = S.aiKey
+    ? (pendientesIA ? '<button class="btn-ghost btn-wide alt-iatodas" id="altIA">'+I.play+
+        ' Que la IA mire las '+pendientesIA+' que faltan y proponga</button>' : '')
+    : '<p class="alt-sinkey">'+I.info+'<span>El plugin no puede ver qué hay en la imagen. Con tu API key de Claude, la IA la mira y te propone el texto. '+
+      '<button class="linkbtn" id="altKey">Cargar la key</button></span></p>';
+
   el.innerHTML =
     (otroFrame ? '<div class="note note-warn"><span>'+I.info+'</span><div>Estas imágenes son de '+
       '<b>'+esc(S.imagenesFrame)+'</b>. Tenés seleccionado <b>'+esc(S.sel.name)+'</b>: '+
       '<button class="linkbtn" id="ctaAlt2">buscar las de la selección</button>. Lo que escribiste queda guardado.</div></div>' : '')+
-    '<div class="note note-mut"><span>'+I.info+'</span><div>'+
-      '<b>'+conAlt+' de '+S.imagenes.length+'</b> confirmadas'+
-      (borradores ? ' · <b>'+borradores+'</b> con cambios sin guardar' : '')+'. '+
-      'Cada campo viene con una sugerencia sacada del contexto. <b>Revisala</b>: el alt tiene que decir '+
-      'qué APORTA la imagen acá, y eso no lo puede saber el plugin.'+
-    '</div></div>'+
+    veredicto + guia + ia +
     S.imagenes.map(function(img, i){
       var deco = (img.alt === '[decorativa]');
       var borrador = tieneBorrador(img);
-      // El valor arranca con la sugerencia YA ESCRITA en el campo, no como
-      // placeholder. Lo que se tipea queda como borrador por imagen: volver al
-      // menú o cambiar de sección no lo borra.
-      var valor = deco ? '' : valorAlt(img);
-      var ia = S.aiBusy[img.nodeId];
-      return '<div class="alt-i'+(deco?' deco':'')+'">'+
-        '<div class="alt-hd">'+
-          '<span class="alt-nm">'+esc(img.name)+'</span>'+
-          '<span class="chip c-mut">'+esc(img.clase)+'</span>'+
-          '<span class="chip c-mut">'+img.width+'×'+img.height+'</span>'+
-          (borrador
-            ? '<span class="chip c-warn">sin guardar</span>'
-            : (img.alt
-                ? '<span class="chip c-pass">'+(deco?'decorativa':'documentada')+'</span>'
-                : '<span class="chip c-warn">sin confirmar</span>'))+
-          '<button class="loc" data-node="'+esc(img.nodeId)+'">'+I.pointer+' Localizar</button>'+
+      // Qué opción está marcada: lo guardado manda; si no hay nada guardado,
+      // lo que eligió la persona; si tampoco, lo que propone el plugin.
+      var elige = deco ? 'deco' : (img.alt ? 'info'
+                : (S.altElige[img.nodeId] || (img.decorativaPorDefecto ? 'deco' : 'info')));
+      var lista = img.alt && !borrador;
+      var valor = valorAlt(img);
+      var cargando = S.aiBusy[img.nodeId];
+      var th = S.altThumb[img.nodeId];
+      return '<div class="alt-i">'+
+        '<div class="alt-top">'+
+          '<div class="alt-th">'+(th ? '<img alt="" src="'+th+'">' : '<span class="alt-th-v" data-thumb="'+esc(img.nodeId)+'"></span>')+'</div>'+
+          '<div class="alt-meta"><span class="alt-nm">'+esc(String(img.name).replace(/\s*\[(alt:[^\]]*|decorativa)\]\s*$/, ''))+'</span>'+
+            '<span class="alt-est '+(lista?'hecho':'')+'">'+(lista ? I.check+(deco?' Decorativa':' Listo') : (borrador ? 'Sin guardar' : 'Falta decidir'))+'</span>'+
+            (img.motivo ? '<span class="alt-mot">'+esc(img.motivo)+'</span>' : '')+
+          '</div>'+
+          '<button class="loc" data-node="'+esc(img.nodeId)+'" aria-label="Ver '+esc(img.name)+' en el canvas">'+I.pointer+' Ver</button>'+
         '</div>'+
-        (img.motivo ? '<div class="alt-mot">'+esc(img.motivo)+'</div>' : '')+
-        (deco
-          ? '<div class="alt-deco">'+I.check+' Marcada decorativa — va con <b>alt=""</b>. '+
-            'El lector la saltea, que es lo correcto cuando no aporta nada que el texto no diga ya.</div>'
+        '<div class="alt-elige" role="radiogroup" aria-label="¿Qué es esta imagen?">'+
+          '<button role="radio" aria-checked="'+(elige==='deco')+'" class="'+(elige==='deco'?'on':'')+'" data-deco="'+i+'">Decorativa</button>'+
+          '<button role="radio" aria-checked="'+(elige==='info')+'" class="'+(elige==='info'?'on':'')+'" data-info="'+i+'">Aporta información</button>'+
+        '</div>'+
+        (elige === 'deco'
+          ? '<p class="alt-deco">Va con <b>alt=""</b>: el lector la saltea.'+(deco ? '' : ' <button class="linkbtn" data-deco-ok="'+i+'">Confirmar</button>')+'</p>'
           : '<label class="sr" for="alt-'+i+'">Texto alternativo de '+esc(img.name)+'</label>'+
             '<textarea class="alt-tx" id="alt-'+i+'" data-alt="'+i+'" rows="2" '+
-            'placeholder="Qué aporta esta imagen acá…">'+esc(valor)+'</textarea>'+
-            '<div class="alt-ia">'+
-              '<button class="btn-ghost btn-sm" data-ia="'+i+'"'+(ia?' disabled aria-busy="true"':'')+'>'+
-                (ia ? '<span class="spin"></span> Generando…' : I.play+' Generar borrador con IA')+'</button>'+
-              '<button class="btn-ghost btn-sm" data-prompt="'+i+'">'+I.code+' Copiar prompt</button>'+
-              '<button class="btn-ghost btn-sm" data-png="'+i+'">'+I.download+' Imagen</button>'+
+            'placeholder="Qué aporta esta imagen acá, en una frase">'+esc(valor)+'</textarea>'+
+            '<div class="alt-ac">'+
+              '<button class="btn-primary" data-save="'+i+'">'+I.check+' Guardar</button>'+
+              (S.aiKey
+                ? '<button class="linkbtn" data-ia="'+i+'"'+(cargando?' disabled aria-busy="true"':'')+'>'+
+                  (cargando ? 'La IA la está mirando…' : 'Que la IA proponga')+'</button>'
+                : '<button class="linkbtn" data-ia="'+i+'">Que la IA proponga</button>')+
+              '<button class="linkbtn" data-prompt="'+i+'" title="Copia el prompt y baja la imagen, para usarlos en Claude sin key">Copiar prompt e imagen</button>'+
             '</div>')+
-        '<div class="alt-ac">'+
-          (deco ? '' : '<button class="btn-primary" data-save="'+i+'">'+I.check+' Guardar alt</button>')+
-          '<button class="btn-text'+(deco?' on':'')+'" data-deco="'+i+'">'+
-          (deco ? 'Ya no es decorativa' : 'Es decorativa')+'</button>'+
-        '</div>'+
       '</div>';
     }).join('')+
     '<button class="btn-primary btn-wide" id="pegarAlts">'+I.stamp+
@@ -3553,6 +3623,24 @@ function renderAlt(){
     '<button class="btn-ghost btn-wide" id="ctaAlt">'+I.refresh+' Volver a buscar</button>';
 
   wireAlt(el);
+  pedirMiniaturas(el);
+}
+
+// Las miniaturas se piden de a una, chicas, y se ponen sin re-render para no
+// perder lo que se está escribiendo.
+function pedirMiniaturas(el){
+  el.querySelectorAll('[data-thumb]').forEach(function(sp){
+    var id = sp.dataset.thumb;
+    if (S.altThumb[id] === 'pidiendo') return;
+    S.altThumb[id] = 'pidiendo';
+    pedirPng(id, 160, function(m){
+      if (!m.ok) { delete S.altThumb[id]; return; }
+      var bytes = m.bytes instanceof Uint8Array ? m.bytes : new Uint8Array(m.bytes);
+      S.altThumb[id] = URL.createObjectURL(new Blob([bytes], { type:'image/png' }));
+      var v = document.querySelector('[data-thumb="'+id+'"]');
+      if (v) v.outerHTML = '<img alt="" src="'+S.altThumb[id]+'">';
+    });
+  });
 }
 
 function valorAlt(img){
@@ -3589,32 +3677,49 @@ function wireAlt(el){
       render();
     };
   });
-  el.querySelectorAll('[data-deco]').forEach(function(b){
+  // "Decorativa" se guarda en el acto: no hay nada más que escribir
+  function marcarDeco(i){
+    var img = S.imagenes[i];
+    img.alt = '[decorativa]';
+    S.altElige[img.nodeId] = 'deco';
+    delete S.altDraft[img.nodeId];
+    post({ type:'save-alt', nodeId: img.nodeId, alt: img.alt });
+    render();
+  }
+  el.querySelectorAll('[data-deco]').forEach(function(b){ b.onclick = function(){ marcarDeco(b.dataset.deco); }; });
+  el.querySelectorAll('[data-deco-ok]').forEach(function(b){ b.onclick = function(){ marcarDeco(b.dataset.decoOk); }; });
+  el.querySelectorAll('[data-info]').forEach(function(b){
     b.onclick = function(){
-      var img = S.imagenes[b.dataset.deco];
-      if (img.alt === '[decorativa]') {
-        // Vuelve a editable, con la sugerencia de nuevo a mano
-        img.alt = '';
-      } else {
-        img.alt = '[decorativa]';
-        delete S.altDraft[img.nodeId];
-      }
-      post({ type:'save-alt', nodeId: img.nodeId, alt: img.alt });
+      var img = S.imagenes[b.dataset.info];
+      S.altElige[img.nodeId] = 'info';
+      if (img.alt === '[decorativa]') { img.alt = ''; post({ type:'save-alt', nodeId: img.nodeId, alt: '' }); }
       render();
+      var t = document.querySelector('#s-alt [data-alt="'+b.dataset.info+'"]');
+      if (t) t.focus();
     };
   });
+  var gd = el.querySelector('.alt-guia');
+  if (gd) gd.ontoggle = function(){ S.altGuia = gd.open; };
+  var ak = el.querySelector('#altKey');
+  if (ak) ak.onclick = function(){ abrirAjustes(true); var k = document.getElementById('optKey'); if (k) k.focus(); };
+  var at = el.querySelector('#altIA');
+  if (at) at.onclick = function(){
+    // De a una, para no pegarle a la API con todas juntas
+    var cola = S.imagenes.filter(function(i){ return !i.alt; });
+    (function sig(){
+      var img = cola.shift();
+      if (!img) return;
+      generarAltConIA(img, sig);
+    })();
+  };
   el.querySelectorAll('[data-ia]').forEach(function(b){
     b.onclick = function(){ generarAltConIA(S.imagenes[b.dataset.ia]); };
   });
   el.querySelectorAll('[data-prompt]').forEach(function(b){
     b.onclick = function(){
-      copiar(promptAlt(S.imagenes[b.dataset.prompt], true));
-      toast('Prompt copiado. Pegalo en Claude y adjuntá la imagen (botón "Imagen").');
-    };
-  });
-  el.querySelectorAll('[data-png]').forEach(function(b){
-    b.onclick = function(){
-      var img = S.imagenes[b.dataset.png];
+      var img = S.imagenes[b.dataset.prompt];
+      copiar(promptAlt(img, true));
+      toast('Prompt copiado y la imagen bajada. Pegá el prompt en Claude y adjuntale la imagen.');
       pedirPng(img.nodeId, 1024, function(m){
         if (!m.ok) { toast(m.message || 'No se pudo exportar la imagen.', true); return; }
         var a = document.createElement('a');
@@ -3654,11 +3759,13 @@ function promptAlt(img, paraCopiar){
   return (paraCopiar ? 'Te adjunto una imagen de un diseño en Figma.\n\n' : '') +
     'Escribí el texto alternativo (alt) de esta imagen para un lector de pantalla, en español.\n\n' +
     'Contexto de la pantalla:\n- ' + ctx.join('\n- ') + '\n\n' +
-    'Criterios (WCAG 1.1.1):\n' +
-    '- Decí qué APORTA la imagen en este contexto, no cómo se ve.\n' +
-    '- Una sola frase, de 125 caracteres como máximo, sin "imagen de" ni "foto de" al principio.\n' +
-    '- Si la imagen repite lo que ya dice el texto de al lado, o es decorativa, respondé solo: DECORATIVA\n' +
-    '- Si es un gráfico, contá el dato principal que muestra.\n\n' +
+    'Seguí el árbol de decisión de la W3C (WCAG 1.1.1), en este orden:\n' +
+    '1. Si tiene texto adentro: si ese texto ya está escrito al lado, o es solo un efecto visual, es decorativa; si no, el alt es ese texto.\n' +
+    '2. Si es lo único de un botón o link: el alt dice qué hace o adónde lleva.\n' +
+    '3. Si aporta información (una foto que importa, un producto, una persona, un gráfico): decí qué APORTA acá, no cómo se ve. En un gráfico, el dato principal.\n' +
+    '4. Si es un adorno (fondo, textura, separador, ilustración de relleno) o repite lo que dice el texto de al lado: es decorativa.\n\n' +
+    'Si es decorativa, respondé solo: DECORATIVA\n' +
+    'Si no, una sola frase de 125 caracteres como máximo, sin "imagen de" ni "foto de" al principio.\n\n' +
     'Respondé únicamente con el alt, sin comillas ni explicaciones.';
 }
 
@@ -3685,7 +3792,7 @@ function bytesABase64(bytes){
   return btoa(bin);
 }
 
-function generarAltConIA(img){
+function generarAltConIA(img, despues){
   if (!S.aiKey){
     abrirAjustes(true);
     var k = document.getElementById('optKey'); if (k) k.focus();
@@ -3693,7 +3800,7 @@ function generarAltConIA(img){
     return;
   }
   S.aiBusy[img.nodeId] = true; render();
-  function fin(msg, err){ delete S.aiBusy[img.nodeId]; render(); if (msg) toast(msg, err); }
+  function fin(msg, err){ delete S.aiBusy[img.nodeId]; render(); if (msg) toast(msg, err); if (despues) despues(); }
 
   pedirPng(img.nodeId, 1024, function(m){
     if (!m.ok) { fin(m.message || 'No se pudo exportar la imagen.', true); return; }
@@ -3732,11 +3839,13 @@ function generarAltConIA(img){
         .map(function(c){ return c.text; }).join(' ').replace(/\s+/g, ' ').trim().replace(/^["“]|["”]$/g, '');
       if (!texto) { fin('La respuesta vino vacía. Probá de nuevo.', true); return; }
       if (/^DECORATIVA\.?$/i.test(texto)) {
-        fin('Claude la considera decorativa. Si estás de acuerdo, tocá "Es decorativa".');
+        S.altElige[img.nodeId] = 'deco';
+        fin('La IA cree que "' + img.name + '" es decorativa. Si estás de acuerdo, tocá "Confirmar".');
         return;
       }
+      S.altElige[img.nodeId] = 'info';
       S.altDraft[img.nodeId] = texto;
-      fin('Borrador listo. Revisalo y tocá "Guardar alt" si está bien.');
+      fin('Propuesta lista para "' + img.name + '". Revisala y tocá "Guardar".');
     }).catch(function(e){
       fin('No se pudo conectar con Claude: ' + (e && e.message ? e.message : e), true);
     });
@@ -4098,13 +4207,13 @@ function renderFooter(){
 
     case 'aria':
       var picked = S.aria ? S.aria.items.filter(function(i){ return S.ariaPicked[i.nodeId]; }).length : 0;
-      c.innerHTML = S.aria ? '<span><b>'+S.aria.items.length+'</b> controles · <b>'+picked+'</b> elegidos</span>'
+      c.innerHTML = S.aria ? '<span><b>'+S.aria.items.length+'</b> controles para anotar</span>'
                            : '<span>Listo para sugerir</span>';
       a.innerHTML = (S.aria
           ? '<button class="btn-ghost" id="aAria" '+dis+'>'+busy+I.refresh+' Volver a analizar</button>' : '')+
         (S.aria && S.aria.items.length
           ? '<button class="btn-primary" id="aDrawAria" style="background:#8C31E8;color:#FFFFFF">'+
-            I.stamp+' Anotar '+(picked ? picked : 'todas')+' en Figma</button>' : '');
+            I.stamp+' Anotar en Figma</button>' : '');
       break;
 
     case 'audit':
@@ -4855,7 +4964,10 @@ render();
 setTimeout(function(){
   if (!S.criteria.length && !S.ready){
     S.fatal = 'code.js no respondió al arranque. Revisá la consola de Figma '+
-              '(Plugins → Development → Open console) y mandame lo que diga.';
+              '(Plugins → Development → Open console) y mandame lo que diga. '+
+              '[' + VERSION + ' · ' + (EN_WEB ? 'copia web' : 'panel') + ' · ' +
+              location.protocol + ' · origen ' + (location.origin || '?') + ']';
+    if (EN_WEB) S.fatal += ' Para seguir, cerrá el plugin y volvé a abrirlo: el resto funciona sin la copia web.';
     render();
   }
 }, 4500);
