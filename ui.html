@@ -1287,8 +1287,8 @@
       <span class="hint">En las sugerencias de color, nombrar el estilo del design system en vez del hex.</span></label>
   </div>
 
-  <div class="set-t" style="margin-top:16px">Borradores de alt con IA (opcional)</div>
-  <div class="set-key">
+  <div class="set-t ia-alt" style="margin-top:16px" hidden>Borradores de alt con IA (opcional)</div>
+  <div class="set-key ia-alt" hidden>
     <label for="optKey">API key de Claude</label>
     <div class="set-key-r">
       <input type="password" id="optKey" placeholder="sk-ant-…" autocomplete="off" spellcheck="false">
@@ -1297,10 +1297,10 @@
     </div>
     <span class="hint" id="keyState">Sin key cargada.</span>
     <ul class="hint set-key-l">
-      <li><b>Para qué:</b> en Textos alternativos, el botón "Generar borrador con IA" mira la imagen y escribe una primera versión del alt. Vos la revisás y la guardás.</li>
-      <li><b>Qué necesitás:</b> una API key de Claude, que se crea en console.anthropic.com. Cada borrador tiene un costo de uso en esa cuenta.</li>
+      <li><b>Para qué:</b> en Textos alternativos, "Que la IA proponga" mira la imagen y escribe una primera versión del alt, o te dice si es decorativa. Vos la revisás y la guardás.</li>
+      <li><b>Cómo conseguirla:</b> entrá a <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> → API Keys → Create Key, y pegá acá la clave (empieza con sk-ant-). La cuenta necesita crédito cargado: cada propuesta cuesta centavos.</li>
       <li><b>Dónde queda:</b> solo en esta compu. No viaja con el archivo ni la ve nadie más.</li>
-      <li><b>Sin key:</b> usá "Copiar prompt" y pegalo en Claude junto con la imagen. Es lo mismo, a mano.</li>
+      <li><b>Sin key:</b> usá "Copiar prompt e imagen" y pegalo en Claude con la imagen adjunta. Es lo mismo, a mano.</li>
     </ul>
   </div>
 
@@ -1338,7 +1338,7 @@
 // Versión del plugin. Como los plugins locales no se actualizan solos, la
 // versión y la fecha quedan a la vista y se dice dónde chequear si hay una
 // nueva. Sin esto nadie sabe qué está corriendo.
-var VERSION = 'v1.2.4';
+var VERSION = 'v1.2.5';
 
 // El cuentagotas del sistema (el de la lupa, que toma de toda la pantalla)
 // solo existe si el panel tiene dirección web. Figma carga este HTML sin
@@ -1347,12 +1347,15 @@ var VERSION = 'v1.2.4';
 var UI_WEB = 'https://piajackson-coder.github.io/px-accesibility-plugin/v/' + VERSION + '/ui.html';
 // Ojo: Figma puede cargar el panel normal desde una dirección https pero con
 // origen anónimo ("null"). Ese NO es la copia web: lo que cuenta es el origen.
+// La IA en Textos alternativos está en pausa (pedido de Pia, 21/10): sin key,
+// sin "Que la IA proponga", sin prompt para copiar. Para volver, true.
+var IA_EN_ALT = false;
 var EN_WEB = /^https?:$/.test(location.protocol) && !!location.origin && location.origin !== 'null';
 var VERSION_FECHA = '2026-10-21';
 var VERSION_REPO = 'GitHub';
 // Cuando exista, poné acá la URL del repo (https://github.com/…) y el pie
 // de la home pasa a ser un link que abre GitHub en el navegador
-var VERSION_REPO_URL = 'https://github.com/piajackson-coder/px-accesibility-plugin/releases/latest';
+var VERSION_REPO_URL = 'https://github.com/piajackson-coder/px-accesibility-plugin';
 
 // Cualquier link externo del panel (pie de la home, Ayuda) se abre con
 // figma.openExternal: dentro del iframe del plugin target=_blank no es confiable
@@ -1364,10 +1367,15 @@ document.addEventListener('click', function(ev){
 
 // Lo que cambió en cada versión. Se muestra en Ayuda → Novedades.
 var CHANGELOG = [
+  { v:'v1.2.5', fecha:'2026-10-21', items:[
+    'Nada de lo que pegás en el canvas se borra al pegar otra vez: cada cosa queda como una capa más, y lo nuevo se pone al lado.',
+    'Textos alternativos en el canvas: una tabla al costado, con la miniatura de cada imagen y lo que lee el lector. Nada encima del diseño.',
+    'Arreglo: pegar los textos alternativos, el resumen y el análisis daba "object is not extensible".',
+    'Textos alternativos: más simple, sin IA por ahora, y con "Pegar en Figma" en la barra de abajo.',
+    'El link del pie lleva al repositorio en GitHub.'
+  ]},
   { v:'v1.2.4', fecha:'2026-10-21', items:[
     'Textos alternativos: miniatura de cada imagen, una decisión ("Decorativa" o "Aporta información") y la guía de la W3C. Una imagen que es lo único de un botón ya no se marca decorativa.',
-    'Textos alternativos en el canvas: un recuadro de color y un número en cada imagen, y al lado la lista con el mismo número. Ya no se pisan.',
-    'Textos alternativos: con API key, la IA mira las imágenes que faltan y propone el texto, o te dice si es decorativa.',
     'Etiquetas ARIA, para quien las usa por primera vez: cada control muestra qué dice el lector de pantalla, y si no se entiende, escribís qué hace ahí mismo. El código para el dev va plegado.',
     'Tipografía: cada texto a revisar tiene su "Ver en el canvas" (reemplaza al botón de ocultar).',
     'Arreglo: el panel podía quedar sin respuesta al abrir ("code.js no respondió al arranque").'
@@ -3547,32 +3555,31 @@ function renderAlt(){
 
   var veredicto = faltan
     ? '<div class="c-res aviso"><span class="c-res-ic">'+I.image+'</span><div class="c-res-t">'+
-      '<b>Faltan '+faltan+' de '+S.imagenes.length+'.</b> Mirá cada imagen y decidí: ¿es de adorno o aporta información?</div></div>'
+      '<b>'+faltan+' de '+S.imagenes.length+' sin decidir.</b> ¿Es un adorno o aporta información?</div></div>'
     : '<div class="c-res"><span class="c-res-ic">'+I.check+'</span><div class="c-res-t">'+
-      '<b>Todas decididas.</b> Pegalas en Figma para que el dev las vea.</div></div>';
+      '<b>Todas listas.</b> Pegalas en Figma para el dev.</div></div>';
 
   // El árbol de decisión de la W3C, en criollo. Plegado: se abre la primera vez
   // que hace falta y después estorba.
   var guia = '<details class="alt-guia"'+(S.altGuia?' open':'')+'><summary>¿Cuándo es decorativa?<span class="caret">'+I.chevron+'</span></summary>'+
     '<div class="alt-guia-b">'+
-      '<div><b>Decorativa</b> <span>va con alt vacío y el lector la saltea</span></div>'+
-      '<ul><li>Es un adorno: fondo, textura, borde, separador.</li>'+
+      '<div><b>Decorativa</b> <span>el lector la saltea</span></div>'+
+      '<ul><li>Es un adorno: fondo, textura, separador.</li>'+
         '<li>Lo que muestra ya está escrito al lado.</li>'+
-        '<li>Está en un botón o link que ya tiene texto.</li>'+
-        '<li>Es una ilustración de relleno que no suma información.</li></ul>'+
+        '<li>Está en un botón que ya tiene texto.</li></ul>'+
       '<div><b>Aporta información</b> <span>se describe en una frase</span></div>'+
-      '<ul><li>Tiene texto adentro que no está en otro lado: escribí ese texto.</li>'+
-        '<li>Es lo único de un botón o link: decí qué hace o adónde lleva.</li>'+
-        '<li>Muestra algo que importa (un producto, una persona, un gráfico): contá qué aporta; en un gráfico, el dato.</li></ul>'+
-      '<a href="https://www.w3.org/WAI/tutorials/images/decision-tree/" target="_blank" rel="noopener">Árbol de decisión de la W3C</a>'+
+      '<ul><li>Tiene texto adentro: escribí ese texto.</li>'+
+        '<li>Es lo único de un botón: decí qué hace.</li>'+
+        '<li>Muestra algo que importa: decí qué aporta.</li></ul>'+
+      '<a href="https://www.w3.org/WAI/tutorials/images/decision-tree/" target="_blank" rel="noopener">Guía de la W3C</a>'+
     '</div></details>';
 
   var pendientesIA = S.imagenes.filter(function(i){ return !i.alt && !S.aiBusy[i.nodeId]; }).length;
-  var ia = S.aiKey
+  var ia = !IA_EN_ALT ? '' : (S.aiKey
     ? (pendientesIA ? '<button class="btn-ghost btn-wide alt-iatodas" id="altIA">'+I.play+
         ' Que la IA mire las '+pendientesIA+' que faltan y proponga</button>' : '')
     : '<p class="alt-sinkey">'+I.info+'<span>El plugin no puede ver qué hay en la imagen. Con tu API key de Claude, la IA la mira y te propone el texto. '+
-      '<button class="linkbtn" id="altKey">Cargar la key</button></span></p>';
+      '<button class="linkbtn" id="altKey">Cargar la key</button></span></p>');
 
   el.innerHTML =
     (otroFrame ? '<div class="note note-warn"><span>'+I.info+'</span><div>Estas imágenes son de '+
@@ -3604,23 +3611,20 @@ function renderAlt(){
           '<button role="radio" aria-checked="'+(elige==='info')+'" class="'+(elige==='info'?'on':'')+'" data-info="'+i+'">Aporta información</button>'+
         '</div>'+
         (elige === 'deco'
-          ? '<p class="alt-deco">Va con <b>alt=""</b>: el lector la saltea.'+(deco ? '' : ' <button class="linkbtn" data-deco-ok="'+i+'">Confirmar</button>')+'</p>'
+          ? '<p class="alt-deco">El lector la saltea (alt vacío).'+(deco ? '' : ' <button class="linkbtn" data-deco-ok="'+i+'">Confirmar</button>')+'</p>'
           : '<label class="sr" for="alt-'+i+'">Texto alternativo de '+esc(img.name)+'</label>'+
             '<textarea class="alt-tx" id="alt-'+i+'" data-alt="'+i+'" rows="2" '+
-            'placeholder="Qué aporta esta imagen acá, en una frase">'+esc(valor)+'</textarea>'+
+            'placeholder="Qué aporta, en una frase">'+esc(valor)+'</textarea>'+
             '<div class="alt-ac">'+
               '<button class="btn-primary" data-save="'+i+'">'+I.check+' Guardar</button>'+
-              (S.aiKey
+              (!IA_EN_ALT ? '' : S.aiKey
                 ? '<button class="linkbtn" data-ia="'+i+'"'+(cargando?' disabled aria-busy="true"':'')+'>'+
                   (cargando ? 'La IA la está mirando…' : 'Que la IA proponga')+'</button>'
                 : '<button class="linkbtn" data-ia="'+i+'">Que la IA proponga</button>')+
-              '<button class="linkbtn" data-prompt="'+i+'" title="Copia el prompt y baja la imagen, para usarlos en Claude sin key">Copiar prompt e imagen</button>'+
+              (!IA_EN_ALT ? '' : '<button class="linkbtn" data-prompt="'+i+'" title="Copia el prompt y baja la imagen, para usarlos en Claude sin key">Copiar prompt e imagen</button>')+
             '</div>')+
       '</div>';
-    }).join('')+
-    '<button class="btn-primary btn-wide" id="pegarAlts">'+I.stamp+
-      ' Pegar los textos alternativos en Figma</button>'+
-    '<button class="btn-ghost btn-wide" id="ctaAlt">'+I.refresh+' Volver a buscar</button>';
+    }).join('');
 
   wireAlt(el);
   pedirMiniaturas(el);
@@ -3796,7 +3800,7 @@ function generarAltConIA(img, despues){
   if (!S.aiKey){
     abrirAjustes(true);
     var k = document.getElementById('optKey'); if (k) k.focus();
-    toast('Para generar borradores, cargá tu API key de Claude en Ajustes. Sin key, usá "Copiar prompt".', true);
+    toast('Para generar borradores, cargá tu API key de Claude en Ajustes. Sin key, usá "Copiar prompt e imagen".', true);
     return;
   }
   S.aiBusy[img.nodeId] = true; render();
@@ -4235,9 +4239,15 @@ function renderFooter(){
       break;
 
     case 'alt':
-      c.innerHTML = S.imagenes ? '<span><b>'+S.imagenes.length+'</b> imágenes · <b>'+
-        S.imagenes.filter(function(i){ return i.alt; }).length+'</b> confirmadas</span>' : '<span>Listo para buscar</span>';
-      a.innerHTML = '';
+      c.innerHTML = S.imagenes ? '<span><b>'+S.imagenes.filter(function(i){ return i.alt; }).length+'</b> de <b>'+
+        S.imagenes.length+'</b> listas</span>' : '<span>Listo para buscar</span>';
+      // Las acciones van en la barra, como en el resto de las pantallas: abajo
+      // de la lista quedaban fuera de la vista
+      a.innerHTML = S.imagenes && S.imagenes.length
+        ? '<button class="btn-ghost" id="ctaAlt" '+(noSel?'disabled':'')+'>'+I.refresh+' Volver a buscar</button>'+
+          '<button class="btn-primary" id="pegarAlts">'+I.stamp+' Pegar en Figma</button>'
+        : '';
+      wireAlt(a);
       break;
     case 'sim':
       c.innerHTML = S.sim.url ? '<span>'+esc(S.sim.nombre)+'</span>' : '<span>Listo para capturar</span>';
@@ -4775,7 +4785,7 @@ onmessage = function(e){
       render(); break;
 
     case 'alts-pasted':
-      terminoPintar(); toast('Etiquetas alt sobre '+(m.etiquetas||0)+' imágenes, más el detalle al costado.');
+      terminoPintar(); toast('Listo: la tabla con '+((m.count||0)===1 ? 'el texto alternativo' : 'los '+(m.count||0)+' textos alternativos')+' quedó al costado de la pantalla.');
       break;
 
     case 'alt-saved':

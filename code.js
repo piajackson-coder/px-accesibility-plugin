@@ -2388,10 +2388,8 @@ function ariaInstruction(item) {
 function buildAriaOverlay(rootNode, items, agrupar) {
   var container = getOrCreateAnnotContainer();
   var name = 'WCAG ▸ [ARIA] ' + rootNode.name;
-
-  for (var i = container.children.length - 1; i >= 0; i--) {
-    if (container.children[i].name === name) container.children[i].remove();
-  }
+  // No se borra lo que ya estaba pegado: cada anotación es una capa más del
+  // archivo, independiente del plugin.
 
   var overlay = figma.createFrame();
   overlay.name = name;
@@ -2459,9 +2457,6 @@ var MONO_FAMILY = 'Roboto Mono';
 function buildAriaLegend(rootNode, items, agrupar) {
   var container = getOrCreateAnnotContainer();
   var name = 'WCAG ▸ [ARIA spec] ' + rootNode.name;
-  for (var i = container.children.length - 1; i >= 0; i--) {
-    if (container.children[i].name === name) container.children[i].remove();
-  }
 
   var W = 520, PAD = 28, GAP = 16;
   var sheet = figma.createFrame();
@@ -2694,6 +2689,7 @@ function buildAriaLegend(rootNode, items, agrupar) {
   text(foot, '·  Si hay texto visible, el nombre accesible tiene que empezar por ese mismo texto, o se rompe el control por voz (2.5.3).', 11);
   text(foot, '·  Todo control necesita foco visible y responder a Enter y Espacio.', 11);
 
+  moverSinPisar([sheet]);
   return sheet;
 }
 
@@ -6670,89 +6666,6 @@ function guardarAlt(nodeId, alt) {
 // puesta 34px por encima del borde, así que en una grilla quedaba encima de la
 // imagen de la fila anterior y parecía desfasada. Ahora se ancla adentro.
 
-// El mismo color en el recuadro de la imagen y en su fila de la lista
-function colorDeAlt(img) {
-  if (img.alt === '[decorativa]') return { r: 0.04, g: 0.42, b: 0.36 };   // verde: decorativa
-  if (img.alt) return { r: 0.145, g: 0.278, b: 0.906 };                    // azul: con alt
-  return { r: 0.75, g: 0.16, b: 0.13 };                                    // rojo: falta
-}
-
-function etiquetasSobreImagenes(imagenes) {
-  var container = getOrCreateAnnotContainer();
-  var name = 'WCAG ▸ [Alt] etiquetas';
-  for (var i = container.children.length - 1; i >= 0; i--) {
-    if (container.children[i].name === name) container.children[i].remove();
-  }
-
-  var overlay = figma.createFrame();
-  overlay.name = name;
-  overlay.fills = [];
-  overlay.clipsContent = false;
-  overlay.resize(1, 1);
-  overlay.x = 0; overlay.y = 0;
-  container.appendChild(overlay);
-  sealOverlay(overlay);
-
-  // Un recuadro en el borde de cada imagen y un número en la esquina. El alt
-  // NO va escrito encima: con varias imágenes juntas, las píldoras con texto
-  // se pisaban. El texto va en la lista de al lado, con el mismo número.
-  var puestas = 0, esquinas = [];
-
-  imagenes.forEach(function(img, idx) {
-    var n = null;
-    try { n = figma.getNodeById(img.nodeId); } catch (e) {}
-    if (!n || !n.absoluteBoundingBox) return;
-    var b = n.absoluteBoundingBox;
-    var color = colorDeAlt(img);
-
-    var marco = figma.createRectangle();
-    marco.name = (idx + 1) + ' · ' + (n.name || 'Imagen');
-    marco.resize(Math.max(1, b.width), Math.max(1, b.height));
-    marco.x = b.x; marco.y = b.y;
-    marco.fills = [];
-    marco.strokes = [{ type: 'SOLID', color: color }];
-    marco.strokeWeight = 3;
-    marco.strokeAlign = 'INSIDE';
-    marco.cornerRadius = 2;
-    overlay.appendChild(marco);
-
-    // El número va centrado en la esquina de arriba a la izquierda. Si otra
-    // imagen ya usó esa esquina (imágenes anidadas), se corre a la derecha.
-    var D = 28, bx = b.x - D / 2, by = b.y - D / 2;
-    var choca = true, vueltas = 0;
-    while (choca && vueltas++ < 20) {
-      choca = esquinas.some(function(e) { return Math.abs(e.x - bx) < D + 4 && Math.abs(e.y - by) < D + 4; });
-      if (choca) bx += D + 6;
-    }
-    esquinas.push({ x: bx, y: by });
-
-    var nro = figma.createFrame();
-    nro.name = 'Nº ' + (idx + 1);
-    nro.resize(D, D);
-    nro.cornerRadius = D / 2;
-    nro.fills = [{ type: 'SOLID', color: color }];
-    nro.strokes = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
-    nro.strokeWeight = 2;
-    nro.layoutMode = 'HORIZONTAL';
-    nro.primaryAxisAlignItems = 'CENTER';
-    nro.counterAxisAlignItems = 'CENTER';
-    nro.primaryAxisSizingMode = 'FIXED';
-    nro.counterAxisSizingMode = 'FIXED';
-    overlay.appendChild(nro);
-    var t = figma.createText();
-    t.fontName = { family: 'Inter', style: 'Bold' };
-    t.characters = String(idx + 1);
-    t.fontSize = 13;
-    t.fills = [{ type: 'SOLID', color: { r: 1, g: 1, b: 1 } }];
-    nro.appendChild(t);
-    nro.x = bx; nro.y = by;
-
-    puestas++;
-  });
-
-  return { overlay: overlay, puestas: puestas };
-}
-
 // La caja que encierra todas las imágenes (subidas a su pantalla), para pegar
 // la lista al lado aunque no haya nada seleccionado
 function cajaDeImagenes(imagenes) {
@@ -6769,78 +6682,86 @@ function cajaDeImagenes(imagenes) {
   return isFinite(x0) ? { x: x0, y: y0, width: x1 - x0, height: y1 - y0 } : null;
 }
 
-function pegarAnotacionesAlt(imagenes, rootNode) {
-  var container = getOrCreateAnnotContainer();
-  var name = 'WCAG ▸ [Textos alternativos]';
-  for (var i = container.children.length - 1; i >= 0; i--) {
-    if (container.children[i].name === name) container.children[i].remove();
-  }
+// Una miniatura de cada imagen para la tabla. Si alguna no se puede
+// exportar, esa fila va sin miniatura: no frena al resto.
+function miniaturasDeImagenes(imagenes) {
+  var out = {};
+  return Promise.all(imagenes.map(function(img) {
+    var n = null;
+    try { n = figma.getNodeById(img.nodeId); } catch (e) {}
+    if (!n || typeof n.exportAsync !== 'function') return null;
+    return n.exportAsync({ format: 'PNG', constraint: { type: 'WIDTH', value: 256 } })
+      .then(function(bytes) { out[img.nodeId] = figma.createImage(bytes).hash; })
+      .catch(function() {});
+  })).then(function() { return out; });
+}
 
-  var W = 460;
+// Los textos alternativos, al costado de la pantalla, como una tabla: una
+// fila por imagen con su miniatura y lo que tiene que leer el lector. Antes se
+// dibujaban recuadros, números y líneas sobre el diseño: con imágenes una
+// dentro de otra se superponían, las líneas cruzaban el diseño y los colores
+// no le decían nada a nadie. La miniatura ya dice de qué imagen se habla.
+function pegarAnotacionesAlt(imagenes, rootNode, miniaturas) {
+  miniaturas = miniaturas || {};
+  var container = getOrCreateAnnotContainer();
+  var viejos = ['WCAG ▸ [Textos alternativos]'];
+
+  var W = 520, TH_W = 128, TH_H = 88;
   var ab = rootNode && rootNode.absoluteBoundingBox ? rootNode.absoluteBoundingBox : cajaDeImagenes(imagenes);
-  var doc = crearDocumento(name, W, {
+  var doc = crearDocumento(viejos[0], W, {
     x: ab ? ab.x + ab.width + 64 : freeSpotOnCanvas().x,
     y: ab ? ab.y : freeSpotOnCanvas().y
   });
 
-  var d = abrirSeccion(doc, 'Portada', 36, 24);
+  var d = abrirSeccion(doc, 'Portada', 36, 20);
   d.texto('Textos alternativos', 24, true, RP.ink, { gap: 5 });
-  d.texto((rootNode ? rootNode.name + '   ·   ' : '') + imagenes.length +
-          ' imágenes   ·   WCAG 1.1.1', 11.5, false, RP.muted, { gap: 8 });
-  d.texto('El número es el de la imagen en el diseño. Azul: tiene alt · Verde: decorativa · Rojo: falta.',
-          10.5, false, RP.muted, { gap: 0 });
+  d.texto('Lo que lee el lector de pantalla en cada imagen' + (rootNode ? ' de ' + rootNode.name : '') +
+          '   ·   WCAG 1.1.1', 11.5, false, RP.muted, { gap: 0 });
   cerrarSeccion(d);
 
   imagenes.forEach(function(img, idx) {
-    var ds = abrirSeccion(doc, 'Imagen ' + (idx + 1), 6, 10);
-    var yCaja = ds.y;
-    ds.col = { x: 44 + 16, w: ds.w - 32 };
-    ds.y += 16;
+    var ds = abrirSeccion(doc, 'Imagen ' + (idx + 1), 0, 0);
+    var y0 = 0;
+    ds.y = 18;
 
-    var decorativa = (img.alt === '[decorativa]') || (!img.alt && img.decorativa);
-
-    // El número en un círculo del mismo color que el recuadro de la imagen
-    var nroD = figma.createEllipse();
-    nroD.resize(26, 26); nroD.x = 60; nroD.y = yCaja + 16;
-    nroD.fills = [{ type: 'SOLID', color: colorDeAlt(img) }];
-    ds.f.appendChild(nroD);
-    var nroT = figma.createText();
-    nroT.fontName = { family: 'Inter', style: 'Bold' };
-    nroT.characters = String(idx + 1);
-    nroT.fontSize = 12;
-    nroT.fills = [{ type: 'SOLID', color: RP.blanco }];
-    nroT.textAlignHorizontal = 'CENTER';
-    nroT.textAutoResize = 'NONE';
-    nroT.resize(26, 15);
-    nroT.x = 60; nroT.y = yCaja + 16 + 5;
-    ds.f.appendChild(nroT);
-    ds.col = { x: 60 + 36, w: ds.w - 32 - 36 };
-
-    ds.texto(String(img.name).replace(/\s*\[(alt:[^\]]*|decorativa)\]\s*$/, ''), 13, true, RP.ink, { gap: 10 });
-
-    if (decorativa) {
-      ds.texto('Decorativa', 11, true, RP.teal, { gap: 4 });
-      ds.texto('alt=""  ·  el lector la saltea', 12, false, RP.ink, { gap: 0 });
-    } else if (img.alt) {
-      ds.texto('Texto alternativo', 10, true, RP.muted, { gap: 4 });
-      ds.texto('alt="' + img.alt + '"', 12, false, RP.ink, { gap: 0 });
-    } else {
-      ds.texto('Falta escribirlo', 11, true, RP.red, { gap: 4 });
-      ds.texto(img.sugerido ? 'Sugerencia: ' + img.sugerido : 'Escribí qué aporta esta imagen.',
-               11, false, RP.muted, { gap: 4 });
-      if (img.motivo) ds.texto(img.motivo, 10.5, false, RP.muted, { gap: 0 });
+    // La miniatura, contenida en su caja, sobre un gris claro
+    var marco = ds.rect(44, ds.y, TH_W, TH_H, RP.papel, 8);
+    var hash = miniaturas[img.nodeId];
+    if (hash) {
+      var foto = ds.rect(44, ds.y, TH_W, TH_H, null, 8);
+      foto.fills = [{ type: 'IMAGE', imageHash: hash, scaleMode: 'FIT' }];
     }
-    ds.col = { x: 44 + 16, w: ds.w - 32 };
 
-    ds.y += 16;
-    var bg = ds.rect(44, yCaja, ds.w, ds.y - yCaja,
-                     decorativa ? RP.tealBg : (img.alt ? RP.papel : RP.rojoBg), 10);
-    try { ds.f.insertChild(0, bg); } catch (e) {}
+    var decorativa = (img.alt === '[decorativa]');
+    var nombre = String(img.name || 'Imagen').replace(/\s*\[(alt:[^\]]*|decorativa)\]\s*$/, '');
+    // ds.w es el ancho útil (sin los márgenes de 44); la columna llega hasta el margen derecho
+    var xTxt = 44 + TH_W + 18, wTxt = (ds.ancho - 44) - xTxt;
+    var alto = ds.enColumna(xTxt, wTxt, function() {
+      ds.texto(nombre, 11, false, RP.muted, { gap: 6 });
+      if (decorativa) {
+        ds.texto('Decorativa', 14, true, RP.ink, { gap: 3 });
+        ds.texto('Va con alt vacío (alt=""): el lector la saltea.', 11.5, false, RP.muted, { gap: 0 });
+      } else if (img.alt) {
+        ds.texto('“' + img.alt + '”', 14, true, RP.ink, { gap: 0 });
+      } else {
+        ds.texto('Falta el texto alternativo', 14, true, RP.red, { gap: 3 });
+        ds.texto(img.sugerido ? 'Propuesta: “' + img.sugerido + '”' : 'Escribí qué aporta esta imagen.',
+                 11.5, false, RP.muted, { gap: 0 });
+      }
+    });
+
+    ds.y = Math.max(ds.y + TH_H, alto) + 18;
+    // Separador entre filas
+    if (idx < imagenes.length - 1) ds.rect(44, ds.y - 1, ds.w, 1, RP.linea);
     cerrarSeccion(ds);
   });
 
+  var fin = abrirSeccion(doc, 'Cierre', 0, 28);
+  cerrarSeccion(fin);
+
   container.appendChild(doc);
   sealOverlay(doc, false);
+  moverSinPisar([doc]);
   traerAnotacionesAlFrente();
   return doc;
 }
@@ -7371,6 +7292,48 @@ function setArtifactsLocked(lock) {
   return n;
 }
 
+// Nada de lo que pega el plugin se borra después. Si en el lugar donde iría un
+// documento nuevo ya hay otro pegado antes, el nuevo (o el grupo, como el
+// resumen y el análisis) se corre a la derecha hasta encontrar lugar libre.
+function moverSinPisar(nodos) {
+  nodos = (nodos || []).filter(Boolean);
+  if (!nodos.length) return;
+  function caja(n) {
+    var b = n.absoluteBoundingBox;
+    return b ? { x: b.x, y: b.y, w: b.width, h: b.height } : { x: n.x, y: n.y, w: n.width, h: n.height };
+  }
+  var cs = nodos.map(caja);
+  var x0 = Math.min.apply(null, cs.map(function(c) { return c.x; }));
+  var y0 = Math.min.apply(null, cs.map(function(c) { return c.y; }));
+  var x1 = Math.max.apply(null, cs.map(function(c) { return c.x + c.w; }));
+  var y1 = Math.max.apply(null, cs.map(function(c) { return c.y + c.h; }));
+  var W = x1 - x0, H = y1 - y0;
+
+  var obst = [];
+  var cont = null;
+  try { cont = getOrCreateAnnotContainer(); } catch (e) {}
+  var candidatos = (cont ? cont.children.slice() : []).concat(figma.currentPage.children.slice());
+  candidatos.forEach(function(n) {
+    if (nodos.indexOf(n) > -1 || n === cont) return;
+    if (String(n.name || '').indexOf('WCAG ▸') !== 0) return;
+    var c = caja(n);
+    if (c.w > 2 && c.h > 2) obst.push(c);
+  });
+
+  var x = x0;
+  for (var vuelta = 0; vuelta < 80; vuelta++) {
+    var choca = null;
+    for (var k = 0; k < obst.length; k++) {
+      var o = obst[k];
+      if (o.x < x + W && o.x + o.w > x && o.y < y0 + H && o.y + o.h > y0) { choca = o; break; }
+    }
+    if (!choca) break;
+    x = choca.x + choca.w + 48;
+  }
+  var dx = Math.round(x - x0);
+  if (dx) nodos.forEach(function(n) { n.x = n.x + dx; });
+}
+
 function getOrCreateAnnotContainer() {
   var page = figma.currentPage;
   for (var ci = 0; ci < page.children.length; ci++) {
@@ -7416,42 +7379,8 @@ function buildAnnotationFrame(auditedNode, audit, dismissedSet) {
   // Designers can toggle this single layer to show/hide all WCAG annotations.
   var annotContainer = getOrCreateAnnotContainer();
 
-  // ── Remove stale card + markers wherever they are on the page ─────────────
-  // Strategy 1 (primary): the audited node stores the IDs of its annotation
-  // frames — figma.getNodeById() finds them instantly regardless of whether
-  // they were moved away from the original parent.
-  var storedAnnotId = '';
-  var storedMkrsId  = '';
-  try { storedAnnotId = auditedNode.getPluginData('wcagAnnotFrameId'); } catch(e) {}
-  try { storedMkrsId  = auditedNode.getPluginData('wcagMkrsFrameId');  } catch(e) {}
-  [storedAnnotId, storedMkrsId].forEach(function(id) {
-    if (!id) return;
-    try {
-      var found = figma.getNodeById(id);
-      if (found) found.remove();
-    } catch(e) {}
-  });
-
-  // Strategy 2 (fallback for legacy/first-run): scan the shared container AND
-  // the immediate parent for frames tagged with wcagForNodeId or a matching name.
-  var nodeIdStr = auditedNode.id;
-  var toRemove = [];
-  var scanTargets = [annotContainer, parent];
-  scanTargets.forEach(function(target) {
-    if (!target || !target.children) return;
-    for (var ci = 0; ci < target.children.length; ci++) {
-      var ch = target.children[ci];
-      if (ch.type !== 'FRAME') continue;
-      if (ch.id === storedAnnotId || ch.id === storedMkrsId) continue; // already gone
-      var linkedId = '';
-      try { linkedId = ch.getPluginData('wcagForNodeId'); } catch(e) {}
-      if (linkedId === nodeIdStr) { toRemove.push(ch); continue; }
-      if (!linkedId && (ch.name === frameName || ch.name === markersName)) {
-        toRemove.push(ch);
-      }
-    }
-  });
-  toRemove.forEach(function(n) { try { n.remove(); } catch(e) {} });
+  // Lo que ya se pegó de auditorías anteriores no se borra: cada anotación es
+  // una capa más del archivo, independiente del plugin.
 
   // ── Helper: is an issue active (not dismissed)? ───────────────────────────
   function isActive(issue) {
@@ -8039,10 +7968,7 @@ function buildFocusOrderOverlay(rootNode, order) {
   var container = getOrCreateAnnotContainer();
   var name = 'WCAG ▸ [' + (order.kind === 'reading' ? 'Reading order' : 'Focus order') + '] ' + rootNode.name;
 
-  // Replace any previous overlay for this frame
-  for (var i = container.children.length - 1; i >= 0; i--) {
-    if (container.children[i].name === name) container.children[i].remove();
-  }
+  // No se borra el que ya estaba pegado: cada orden pegado es una capa más.
 
   // Overlays sit ON TOP of the frame they annotate, so the badges land on the
   // real elements. They must NOT go to the canvas origin: everything the plugin
@@ -8628,8 +8554,6 @@ Doc.prototype.texto = function(chars, size, bold, color, opts) {
   // el cursor avanzaba 10 aunque la línea ocupara 40: por eso se pisaban.
   // Se le pasa una altura generosa y después se decide con la estimación.
   var estimado = Doc.estimarAlto(t.characters, w, size, opts.lineHeight);
-  // Con lineHeight explícito, ese es el alto de línea que manda
-  if (opts.lineHeight) t._lineHeightPx = opts.lineHeight;
   try { t.resize(w, estimado); } catch (e) {}
 
   t.x = (opts.x !== undefined ? opts.x : this.col.x);
@@ -8730,9 +8654,13 @@ Doc.prototype.cerrar = function(padFinal) {
 // Figma sin que nada se pise, y el anidamiento profundo —que es donde la API
 // falla en silencio— nunca aparece.
 
+var ANCHO_DOC = {};
+
 function crearDocumento(nombre, ancho, pos) {
   var f = figma.createFrame();
-  f._anchoDoc = ancho;   // no depender de leerlo de vuelta
+  // El ancho se recuerda aparte: a una capa de Figma no se le pueden agregar
+  // propiedades propias ("object is not extensible"), y eso rompía el pegado.
+  ANCHO_DOC[f.id] = ancho;
   f.name = nombre;
   f.resize(ancho, 400);          // ancho ANTES de activar auto-layout
   f.layoutMode = 'VERTICAL';
@@ -8776,7 +8704,7 @@ function seccion(doc, nombre, fn, padTop, padBottom, bg) {
 }
 
 function abrirSeccion(doc, nombre, padTop, padBottom, bg) {
-  var ancho = doc._anchoDoc || doc.width || 620;
+  var ancho = ANCHO_DOC[doc.id] || doc.width || 620;
   var sec = figma.createFrame();
   sec.name = nombre;
   sec.resize(ancho, 100);
@@ -9179,11 +9107,7 @@ function dibujarReporteSiCorresponde(audits) {
 
 function buildReporteFrames(audits) {
   var container = getOrCreateAnnotContainer();
-  ['WCAG ▸ [1] Resumen', 'WCAG ▸ [2] Análisis completo'].forEach(function(n) {
-    for (var i = container.children.length - 1; i >= 0; i--) {
-      if (container.children[i].name === n) container.children[i].remove();
-    }
-  });
+  // Los reportes anteriores quedan: el nuevo se pone al lado.
 
   // A la derecha del frame auditado
   var ab = (audits.length && audits[0].bounds) ? audits[0].bounds : null;
@@ -9217,6 +9141,8 @@ function buildReporteFrames(audits) {
   } catch (e2) {
     _seccionesFallidas.push('Análisis: ' + ((e2 && e2.message) ? e2.message : String(e2)));
   }
+
+  moverSinPisar([resumen, analisis]);
 
   if (_seccionesFallidas.length) {
     figma.ui.postMessage({
@@ -9458,12 +9384,12 @@ function handleMessage(msg) {
       figma.loadFontAsync({ family: 'Inter', style: 'Regular' }),
       figma.loadFontAsync({ family: 'Inter', style: 'Bold' })
     ]).then(function() {
-      // Dos cosas: la etiqueta sobre cada imagen y el documento al costado
-      var et = etiquetasSobreImagenes(imgsP);
-      var f = pegarAnotacionesAlt(imgsP, raizP);
+      return miniaturasDeImagenes(imgsP);
+    }).then(function(minis) {
+      var f = pegarAnotacionesAlt(imgsP, raizP, minis);
       traerAnotacionesAlFrente();
       figma.viewport.scrollAndZoomIntoView([f]);
-      figma.ui.postMessage({ type: 'alts-pasted', count: imgsP.length, etiquetas: et.puestas });
+      figma.ui.postMessage({ type: 'alts-pasted', count: imgsP.length });
     }).catch(function(e) {
       figma.ui.postMessage({ type: 'error',
         message: 'No se pudo pegar: ' + ((e && e.message) ? e.message : e) });
