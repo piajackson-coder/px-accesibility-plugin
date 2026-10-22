@@ -1338,7 +1338,7 @@
 // Versión del plugin. Como los plugins locales no se actualizan solos, la
 // versión y la fecha quedan a la vista y se dice dónde chequear si hay una
 // nueva. Sin esto nadie sabe qué está corriendo.
-var VERSION = 'v1.2.5';
+var VERSION = 'v2.0.0';
 
 // El cuentagotas del sistema (el de la lupa, que toma de toda la pantalla)
 // solo existe si el panel tiene dirección web. Figma carga este HTML sin
@@ -1351,7 +1351,7 @@ var UI_WEB = 'https://piajackson-coder.github.io/px-accesibility-plugin/v/' + VE
 // sin "Que la IA proponga", sin prompt para copiar. Para volver, true.
 var IA_EN_ALT = false;
 var EN_WEB = /^https?:$/.test(location.protocol) && !!location.origin && location.origin !== 'null';
-var VERSION_FECHA = '2026-10-21';
+var VERSION_FECHA = '2026-10-22';
 var VERSION_REPO = 'GitHub';
 // Cuando exista, poné acá la URL del repo (https://github.com/…) y el pie
 // de la home pasa a ser un link que abre GitHub en el navegador
@@ -1367,6 +1367,9 @@ document.addEventListener('click', function(ev){
 
 // Lo que cambió en cada versión. Se muestra en Ayuda → Novedades.
 var CHANGELOG = [
+  { v:'v2.0.0', fecha:'2026-10-22', items:[
+    'El plugin pasa a llamarse Q-px-accesibility-v2. Es el mismo plugin, con nombre nuevo.'
+  ]},
   { v:'v1.2.5', fecha:'2026-10-21', items:[
     'Nada de lo que pegás en el canvas se borra al pegar otra vez: cada cosa queda como una capa más, y lo nuevo se pone al lado.',
     'Textos alternativos en el canvas: una tabla al costado, con la miniatura de cada imagen y lo que lee el lector. Nada encima del diseño.',
@@ -1767,7 +1770,7 @@ function renderHelp(){
         '<ul>'+v.items.map(function(i){ return '<li>'+esc(i)+'</li>'; }).join('')+'</ul></div>';
     }).join('');
   } else {
-    cuerpo = '<div class="chg"><div class="chg-v"><b>Q-px-accesibility '+VERSION+'</b><span>'+VERSION_FECHA+'</span></div>'+
+    cuerpo = '<div class="chg"><div class="chg-v"><b>Q-px-accesibility-v2 · '+VERSION+'</b><span>'+VERSION_FECHA+'</span></div>'+
       '<p>Audita contra <b>WCAG 2.2 nivel AA</b>, la versión vigente. Cumplir 2.2 cubre las normativas que citan 2.1: '+
       'incluye todo lo de 2.1 y suma seis criterios. El único retirado es 4.1.1.</p>'+
       '<p>Los plugins importados a mano <b>no se actualizan solos</b>. Para saber si hay una versión más nueva, '+
@@ -4254,7 +4257,7 @@ function renderFooter(){
       a.innerHTML = S.sim.url ? '<button class="btn-primary" id="aSim" '+dis+'>'+I.refresh+' Nueva captura</button>' : '';
       break;
     case 'help':
-      c.innerHTML = '<span>Q-px-accesibility '+VERSION+'</span>'; a.innerHTML = ''; break;
+      c.innerHTML = '<span>Q-px-accesibility-v2 · '+VERSION+'</span>'; a.innerHTML = ''; break;
     case 'criteria':
       c.innerHTML = '<span><b>'+S.criteria.filter(function(x){ return !x.obsolete; }).length+'</b> criterios · WCAG 2.2 AA</span>';
       a.innerHTML = ''; break;
@@ -4661,7 +4664,7 @@ function render(){
   gear.setAttribute('aria-expanded', aj ? 'true' : 'false');
   if (aj){
     back.classList.add('on');
-    document.getElementById('ctxLabel').textContent = 'Q-px-accesibility';
+    document.getElementById('ctxLabel').textContent = 'Q-px-accesibility-v2';
     document.getElementById('ctxName').textContent = 'Ajustes';
   } else if (S.screen === 'menu'){
     back.classList.remove('on');

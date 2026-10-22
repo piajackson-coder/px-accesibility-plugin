@@ -1,4 +1,4 @@
-# Auditor de accesibilidad WCAG 2.2 AA · px studio · Release v1.2.5 · 21/10/26
+# Auditor de accesibilidad WCAG 2.2 AA · px studio · Release v2.0.0 · 22/10/26
 
 Plugin de Figma con la identidad de Qubika: base blanco y negro, Be Vietnam Pro,
 y los secundarios de la paleta usados **solo** para significar algo — nunca de
@@ -18,7 +18,7 @@ nueva, para que nadie esté depurando contra una versión vieja sin saberlo.
 1. Descomprimí la carpeta en algún lugar estable (no en Descargas: Figma la lee cada vez que abre el plugin).
 2. En Figma: **Menú → Plugins → Development → Import plugin from manifest…**
 3. Elegí `manifest.json`.
-4. Queda en **Plugins → Development → Q-px-accesibility-v1**.
+4. Queda en **Plugins → Development → Q-px-accesibility-v2**.
 
 Archivos: `manifest.json`, `code.js`, `ui.html`. Los `test-*.js` no se empaquetan, son para desarrollo.
 

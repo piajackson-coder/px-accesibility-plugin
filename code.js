@@ -1,7 +1,7 @@
-// Q-px-accesibility — auditor WCAG 2.2 AA para Figma
+// Q-px-accesibility-v2 — auditor WCAG 2.2 AA para Figma
 // Runs inside Figma's sandbox (no DOM, no network)
 
-figma.showUI(__html__, { width: 580, height: 660, title: "Q-px-accesibility · WCAG 2.2 AA" });
+figma.showUI(__html__, { width: 580, height: 660, title: "Q-px-accesibility-v2 · WCAG 2.2 AA" });
 
 // ─── Color Utilities ──────────────────────────────────────────────────────────
 
@@ -7821,7 +7821,7 @@ function buildFigmaReport(data) {
   // ── 7. Footer ─────────────────────────────────────────────────────────────
   addR(0, y, W, 1, '#E2E8F0');
   y += 1;
-  addT('Generado con Q-px-accesibility · Qubika · WCAG 2.2 nivel AA', REG, 10, '#94A3B8', PAD, y+12);
+  addT('Generado con Q-px-accesibility-v2 · Qubika · WCAG 2.2 nivel AA', REG, 10, '#94A3B8', PAD, y+12);
   y += 40;
 
   // ── Resize root and navigate ───────────────────────────────────────────────
