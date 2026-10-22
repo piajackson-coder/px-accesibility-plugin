@@ -9,7 +9,7 @@ Auditoría de accesibilidad que corre **solo sobre las capas visibles**, sugiere
 
 ## Instalación
 
-Está publicado en Figma: **[figma.com/community/plugin/1695156521824549739](https://www.figma.com/community/plugin/1695156521824549739)**
+Está publicado en Figma, **privado para Qubika**: hay que entrar con la cuenta de Qubika. **[figma.com/community/plugin/1695156521824549739](https://www.figma.com/community/plugin/1695156521824549739)**
 
 1. Abrí el link y tocá **Save**.
 2. En cualquier archivo: **Actions → Plugins & widgets** → buscá **Q-px-accesibility-v2** → **Run**.
