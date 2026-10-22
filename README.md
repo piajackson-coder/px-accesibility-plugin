@@ -16,7 +16,7 @@ Está publicado en Figma, **privado para Qubika**: hay que entrar con la cuenta 
 
 Las versiones nuevas llegan solas. Abajo de la home del plugin se ve qué versión tenés.
 
-La skill para auditar producto desarrollado (`q-px-accesibility.v2`) está en el repositorio del Framework.
+La skill para auditar producto desarrollado está en el Framework de PX: [`skills/03-materialize-skills/accessibility-audit`](https://github.com/thisisqubika/product-experience-ai-framework/tree/825e9a1449c38d1bffc21f5f4c2ebdb4ae17fe77/skills/03-materialize-skills/accessibility-audit).
 
 ### Desarrollo
 
