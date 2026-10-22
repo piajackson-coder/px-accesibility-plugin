@@ -7,20 +7,22 @@ y "pasa", rojo `#EF4E44` = "falla", amarillo `#FFB800` = "aviso".
 
 Auditoría de accesibilidad que corre **solo sobre las capas visibles**, sugiere el token del design system que sí pasa, e infiere el orden de foco.
 
-## Versión y trazabilidad
-
-Un plugin importado a mano **no se actualiza solo**: cada quien corre la copia
-que importó. El menú muestra la versión, la fecha y dónde chequear si hay una más
-nueva, para que nadie esté depurando contra una versión vieja sin saberlo.
-
 ## Instalación
 
-1. Descomprimí la carpeta en algún lugar estable (no en Descargas: Figma la lee cada vez que abre el plugin).
-2. En Figma: **Menú → Plugins → Development → Import plugin from manifest…**
-3. Elegí `manifest.json`.
-4. Queda en **Plugins → Development → Q-px-accesibility-v2**.
+Está publicado en Figma: **[figma.com/community/plugin/1695156521824549739](https://www.figma.com/community/plugin/1695156521824549739)**
 
-Archivos: `manifest.json`, `code.js`, `ui.html`. Los `test-*.js` no se empaquetan, son para desarrollo.
+1. Abrí el link y tocá **Save**.
+2. En cualquier archivo: **Actions → Plugins & widgets** → buscá **Q-px-accesibility-v2** → **Run**.
+
+Las versiones nuevas llegan solas. Abajo de la home del plugin se ve qué versión tenés.
+
+La skill para auditar producto desarrollado (`q-px-accesibility.v2`) está en el repositorio del Framework.
+
+### Desarrollo
+
+Para probar cambios antes de publicarlos: en Figma de escritorio, **Plugins → Development → Import plugin from manifest…** y elegí `manifest.json`. Archivos: `manifest.json`, `code.js`, `ui.html`. Los `test-*.js` no se empaquetan, son para desarrollo.
+
+El manifest usa `"documentAccess": "dynamic-page"`, que Figma exige para publicar: el código no puede leer capas, variables, estilos ni componentes de forma sincrónica. Antes de cada acción se precarga lo necesario (`precargar` en `code.js`) y `test-dynamic-page.js` lo verifica.
 
 ## Las 7 funcionalidades
 

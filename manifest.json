@@ -1,12 +1,13 @@
 {
   "name": "Q-px-accesibility-v2",
-  "id": "wcag-auditor-qubika",
+  "id": "1695156521824549739",
   "api": "1.0.0",
   "main": "code.js",
   "ui": "ui.html",
   "editorType": [
     "figma"
   ],
+  "documentAccess": "dynamic-page",
   "permissions": [
     "currentuser"
   ],

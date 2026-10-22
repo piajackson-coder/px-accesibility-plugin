@@ -3,6 +3,170 @@
 
 figma.showUI(__html__, { width: 580, height: 660, title: "Q-px-accesibility-v2 · WCAG 2.2 AA" });
 
+// ─── Acceso al documento: "dynamic-page" ─────────────────────────────────────
+// Figma exige documentAccess "dynamic-page" para publicar: las lecturas
+// sincrónicas (getNodeById, mainComponent, getVariableById, getStyleById,
+// getLocalPaintStyles…) dejan de existir. Para no reescribir todo el análisis
+// como asincrónico, antes de cada acción se PRECARGA lo que va a hacer falta y
+// el código de siempre lee de acá. Si algo no se precargó, se cae a la forma
+// vieja (sirve en los tests) y, si tampoco está, se busca en la página actual.
+
+var DOC = { nodos: {}, indice: null, mains: {}, vars: {}, cols: {}, estilos: {},
+            estilosColor: null, varsColor: null };
+
+function nodoPorId(id) {
+  if (!id) return null;
+  if (DOC.nodos[id] !== undefined) return DOC.nodos[id];
+  var n = null;
+  try { n = figma.getNodeById(id); } catch (e) { n = undefined; }
+  if (n === undefined) {
+    // Un solo recorrido de la página por acción, no uno por pedido
+    if (!DOC.indice) {
+      DOC.indice = {};
+      try {
+        figma.currentPage.findAll(function() { return true; })
+          .forEach(function(x) { DOC.indice[x.id] = x; });
+      } catch (e) {}
+    }
+    n = DOC.indice[id] || null;
+  }
+  DOC.nodos[id] = n;
+  return n;
+}
+
+function componenteDe(inst) {
+  if (!inst || inst.type !== 'INSTANCE') return null;
+  if (DOC.mains[inst.id] !== undefined) return DOC.mains[inst.id];
+  try { return inst.mainComponent || null; } catch (e) { return null; }
+}
+function varPorId(id) {
+  if (!id) return null;
+  if (DOC.vars[id] !== undefined) return DOC.vars[id];
+  try { return figma.variables.getVariableById(id); } catch (e) { return null; }
+}
+function colPorId(id) {
+  if (!id) return null;
+  if (DOC.cols[id] !== undefined) return DOC.cols[id];
+  try { return figma.variables.getVariableCollectionById(id); } catch (e) { return null; }
+}
+function estiloPorId(id) {
+  if (!id || typeof id !== 'string') return null;
+  if (DOC.estilos[id] !== undefined) return DOC.estilos[id];
+  try { return figma.getStyleById(id); } catch (e) { return null; }
+}
+function estilosDeColorLocales() {
+  if (DOC.estilosColor) return DOC.estilosColor;
+  try { return figma.getLocalPaintStyles(); } catch (e) { return []; }
+}
+function variablesDeColorLocales() {
+  if (DOC.varsColor) return DOC.varsColor;
+  try { return figma.variables.getLocalVariables('COLOR'); } catch (e) { return []; }
+}
+
+// Los ids de capa que trae un mensaje del panel ("12:34", "I12:34;56:78")
+function idsDelMensaje(msg) {
+  var ids = {};
+  (function walk(v, d) {
+    if (d > 6 || v === null || v === undefined) return;
+    if (typeof v === 'string') { if (/^I?\d+:\d+(;\d+:\d+)*$/.test(v)) ids[v] = true; return; }
+    if (Array.isArray(v)) { v.slice(0, 2000).forEach(function(x) { walk(x, d + 1); }); return; }
+    if (typeof v === 'object') Object.keys(v).forEach(function(k) { walk(v[k], d + 1); });
+  })(msg, 0);
+  return Object.keys(ids);
+}
+
+function precargar(msg) {
+  DOC.nodos = {}; DOC.indice = null;
+  if (typeof figma.getNodeByIdAsync !== 'function') return Promise.resolve();
+  var pend = [];
+  function guardar(obj, id, p) {
+    pend.push(p.then(function(x) { obj[id] = x || null; return x; }, function() { obj[id] = null; }));
+  }
+
+  // 1. Las capas que nombra el mensaje
+  idsDelMensaje(msg).forEach(function(id) { guardar(DOC.nodos, id, figma.getNodeByIdAsync(id)); });
+
+  // 2. Lo que cuelga de la selección: componentes de las instancias, variables
+  //    enlazadas y estilos de relleno
+  var varIds = {}, estiloIds = {};
+  var sel = [];
+  try { sel = figma.currentPage.selection || []; } catch (e) {}
+  var visitados = 0;
+  (function walk(nodos) {
+    nodos.forEach(function(n) {
+      if (visitados++ > 6000) return;
+      if (n.type === 'INSTANCE' && DOC.mains[n.id] === undefined && typeof n.getMainComponentAsync === 'function') {
+        guardar(DOC.mains, n.id, n.getMainComponentAsync());
+      }
+      ['fills', 'strokes'].forEach(function(prop) {
+        var paints; try { paints = n[prop]; } catch (e) { return; }
+        if (!Array.isArray(paints)) return;
+        paints.forEach(function(pt) {
+          var ref = pt && pt.boundVariables && pt.boundVariables.color;
+          if (ref && ref.id) varIds[ref.id] = true;
+        });
+      });
+      try { if (typeof n.fillStyleId === 'string' && n.fillStyleId) estiloIds[n.fillStyleId] = true; } catch (e) {}
+      if (n.children) walk(n.children);
+    });
+  })(sel);
+  Object.keys(estiloIds).forEach(function(id) {
+    if (DOC.estilos[id] === undefined && figma.getStyleByIdAsync) guardar(DOC.estilos, id, figma.getStyleByIdAsync(id));
+  });
+
+  // 3. Estilos y variables de color del archivo
+  if (figma.getLocalPaintStylesAsync) {
+    pend.push(figma.getLocalPaintStylesAsync().then(function(l) { DOC.estilosColor = l; }, function() {}));
+  }
+  var V = figma.variables;
+  if (V && V.getLocalVariablesAsync) {
+    pend.push(V.getLocalVariablesAsync('COLOR').then(function(l) {
+      DOC.varsColor = l;
+      l.forEach(function(v) { DOC.vars[v.id] = v; });
+    }, function() {}));
+  }
+
+  // 4. Las variables enlazadas, sus colecciones enteras y los alias, hasta 6 saltos
+  function cargarVars(ids, salto) {
+    ids = ids.filter(function(id) { return DOC.vars[id] === undefined; });
+    if (!ids.length || salto > 6 || !V || !V.getVariableByIdAsync) return Promise.resolve();
+    return Promise.all(ids.map(function(id) {
+      return V.getVariableByIdAsync(id).then(function(v) { DOC.vars[id] = v || null; return v; },
+                                             function() { DOC.vars[id] = null; return null; });
+    })).then(function(vs) {
+      var mas = [], colIds = {};
+      vs.forEach(function(v) {
+        if (!v) return;
+        if (v.variableCollectionId) colIds[v.variableCollectionId] = true;
+        Object.keys(v.valuesByMode || {}).forEach(function(m) {
+          var val = v.valuesByMode[m];
+          if (val && val.type === 'VARIABLE_ALIAS' && val.id) mas.push(val.id);
+        });
+      });
+      return Promise.all(Object.keys(colIds).filter(function(c) { return DOC.cols[c] === undefined; }).map(function(c) {
+        return V.getVariableCollectionByIdAsync(c).then(function(col) {
+          DOC.cols[c] = col || null;
+          if (col && col.variableIds && salto < 2) col.variableIds.forEach(function(x) { mas.push(x); });
+        }, function() { DOC.cols[c] = null; });
+      })).then(function() { return cargarVars(mas, salto + 1); });
+    });
+  }
+  pend.push(cargarVars(Object.keys(varIds), 0));
+
+  return Promise.all(pend).then(function() {
+    // Las colecciones de las variables locales, para el modo por defecto
+    var faltan = {};
+    (DOC.varsColor || []).forEach(function(v) {
+      if (v.variableCollectionId && DOC.cols[v.variableCollectionId] === undefined) faltan[v.variableCollectionId] = true;
+    });
+    if (!V || !V.getVariableCollectionByIdAsync) return;
+    return Promise.all(Object.keys(faltan).map(function(c) {
+      return V.getVariableCollectionByIdAsync(c).then(function(col) { DOC.cols[c] = col || null; },
+                                                      function() { DOC.cols[c] = null; });
+    }));
+  }).catch(function() {});
+}
+
 // ─── Color Utilities ──────────────────────────────────────────────────────────
 
 function toLinear(c) {
@@ -479,7 +643,7 @@ function valorDeVariable(v, profundidad) {
   if (!v || (profundidad || 0) > 6) return null;
   var modoId = null;
   try {
-    var col = figma.variables.getVariableCollectionById(v.variableCollectionId);
+    var col = colPorId(v.variableCollectionId);
     if (col) modoId = col.defaultModeId;
   } catch (e) {}
   var modos = Object.keys(v.valuesByMode || {});
@@ -487,7 +651,7 @@ function valorDeVariable(v, profundidad) {
   if (!val) return null;
   if (val.type === 'VARIABLE_ALIAS') {
     var dest = null;
-    try { dest = figma.variables.getVariableById(val.id); } catch (e) {}
+    try { dest = varPorId(val.id); } catch (e) {}
     return valorDeVariable(dest, (profundidad || 0) + 1);
   }
   return typeof val.r === 'number' ? val : null;
@@ -524,7 +688,7 @@ function variablesDeLaSeleccion(roots, lista, vistos) {
         var ref = p && p.boundVariables && p.boundVariables.color;
         if (!ref || !ref.id) return;
         var v = null;
-        try { v = figma.variables.getVariableById(ref.id); } catch (e) {}
+        try { v = varPorId(ref.id); } catch (e) {}
         if (!v) return;
         agregarVariable(lista, vistos, v);
         if (v.variableCollectionId) colecciones[v.variableCollectionId] = true;
@@ -533,10 +697,10 @@ function variablesDeLaSeleccion(roots, lista, vistos) {
   });
   Object.keys(colecciones).forEach(function(cid) {
     var col = null;
-    try { col = figma.variables.getVariableCollectionById(cid); } catch (e) {}
+    try { col = colPorId(cid); } catch (e) {}
     ((col && col.variableIds) || []).forEach(function(id) {
       var v = null;
-      try { v = figma.variables.getVariableById(id); } catch (e) {}
+      try { v = varPorId(id); } catch (e) {}
       agregarVariable(lista, vistos, v);
     });
   });
@@ -546,7 +710,7 @@ function variablesDeLaSeleccion(roots, lista, vistos) {
 function cargarPaletaDelArchivo(roots) {
   var lista = [], vistos = {};
   try {
-    figma.getLocalPaintStyles().forEach(function(style) {
+    estilosDeColorLocales().forEach(function(style) {
       var p = (style.paints || []).filter(function(x) {
         return x.type === 'SOLID' && x.visible !== false; })[0];
       if (!p) return;
@@ -560,8 +724,8 @@ function cargarPaletaDelArchivo(roots) {
 
   // Y las variables de color, que es donde vive la escala en los archivos nuevos
   try {
-    if (figma.variables && figma.variables.getLocalVariables) {
-      figma.variables.getLocalVariables('COLOR').forEach(function(v) {
+    if (figma.variables) {
+      variablesDeColorLocales().forEach(function(v) {
         agregarVariable(lista, vistos, v);
       });
     }
@@ -583,7 +747,7 @@ function tokenDeNodo(node, crudo) {
     var f = topSolidFill(node.fills);
     var ref = f && f.boundVariables && f.boundVariables.color;
     if (ref && ref.id && figma.variables) {
-      var v = figma.variables.getVariableById(ref.id);
+      var v = varPorId(ref.id);
       if (v) {
         var enPool = paletaParaSugerir().filter(function(c) { return c.name === v.name; })[0];
         if (enPool) return enPool;
@@ -1595,7 +1759,8 @@ function partesDeCard(node) {
 // describe la plantilla, no esta card en particular.
 function claveDeComponente(node) {
   try {
-    if (node.type === 'INSTANCE' && node.mainComponent) return node.mainComponent.id;
+    var mc = node.type === 'INSTANCE' ? componenteDe(node) : null;
+    if (mc) return mc.id;
   } catch (e) {}
   return null;
 }
@@ -4344,7 +4509,7 @@ function auditConsistencia(roots) {
     getAllNodes(root).forEach(function(n) {
       if (n.type !== 'INSTANCE') return;
       var mid = null;
-      try { mid = n.mainComponent ? n.mainComponent.id : null; } catch (e) {}
+      try { var mcI = componenteDe(n); mid = mcI ? mcI.id : null; } catch (e) {}
       if (!mid) return;
       var etiqueta = directTextChildren(n)
         .map(function(t) { try { return (t.characters || '').trim(); } catch (e) { return ''; } })
@@ -5405,7 +5570,7 @@ function propsDeNombre(nombre) {
 function propsDeVariante(nodeId, nombre) {
   var deComp = null, deInst = null;
   try {
-    var n = typeof figma !== 'undefined' ? figma.getNodeById(nodeId) : null, guard = 0;
+    var n = typeof figma !== 'undefined' ? nodoPorId(nodeId) : null, guard = 0;
     while (n && guard++ < 20) {
       if (!deComp && n.type === 'COMPONENT' && n.variantProperties) {
         deComp = { props: n.variantProperties,
@@ -5420,7 +5585,7 @@ function propsDeVariante(nodeId, nombre) {
         if (hay) {
           var nomComp = n.name;
           try {
-            var mc = n.mainComponent;
+            var mc = componenteDe(n);
             if (mc) nomComp = mc.parent && mc.parent.type === 'COMPONENT_SET' ? mc.parent.name : mc.name;
           } catch (e) {}
           deInst = { props: vp, componente: nomComp };
@@ -6644,7 +6809,7 @@ function inventarioImagenes(rootNode) {
 // ejercicio que se pierde.
 function guardarAlt(nodeId, alt) {
   try {
-    var n = figma.getNodeById(nodeId);
+    var n = nodoPorId(nodeId);
     if (!n) return false;
     n.setPluginData('wcagAlt', alt || '');
     // Y en el nombre de la capa, para que se vea sin el plugin abierto
@@ -6672,7 +6837,7 @@ function cajaDeImagenes(imagenes) {
   var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
   imagenes.forEach(function(img) {
     var n = null;
-    try { n = figma.getNodeById(img.nodeId); } catch (e) {}
+    try { n = nodoPorId(img.nodeId); } catch (e) {}
     while (n && n.parent && n.parent.type !== 'PAGE' && n.parent.type !== 'SECTION') n = n.parent;
     if (!n || !n.absoluteBoundingBox) return;
     var b = n.absoluteBoundingBox;
@@ -6688,7 +6853,7 @@ function miniaturasDeImagenes(imagenes) {
   var out = {};
   return Promise.all(imagenes.map(function(img) {
     var n = null;
-    try { n = figma.getNodeById(img.nodeId); } catch (e) {}
+    try { n = nodoPorId(img.nodeId); } catch (e) {}
     if (!n || typeof n.exportAsync !== 'function') return null;
     return n.exportAsync({ format: 'PNG', constraint: { type: 'WIDTH', value: 256 } })
       .then(function(bytes) { out[img.nodeId] = figma.createImage(bytes).hash; })
@@ -6930,7 +7095,7 @@ function isNodeDirectlyVisible(n) {
 }
 
 function bestExportNode(id) {
-  var node = figma.getNodeById(id);
+  var node = nodoPorId(id);
   if (!node) return null;
 
   if (node.type !== 'TEXT' && node.width >= 16 && node.height >= 8 &&
@@ -7119,7 +7284,7 @@ function continuarAuditoria(nodes, audits, createAnnotations, dismissedSet) {
 
   var thumbPromises = cappedExportIds.map(function(exportId) {
     var exportNode = exportNodeById[exportId];
-    var origNode   = figma.getNodeById(exportToOrigId[exportId]);
+    var origNode   = nodoPorId(exportToOrigId[exportId]);
     return tryExportNode(exportNode, exportId)
       .then(function(result) {
         // Fallback 1: original issue node when bestExportNode chose a parent
@@ -7468,7 +7633,7 @@ function buildAnnotationFrame(auditedNode, audit, dismissedSet) {
 
   var SZ = 20; // marker circle diameter
   markerIssues.forEach(function(entry, idx) {
-    var issueNode = figma.getNodeById(entry.issue.nodeId);
+    var issueNode = nodoPorId(entry.issue.nodeId);
     if (!issueNode) return;
     var nb = issueNode.absoluteBoundingBox;
     if (!nb) return;
@@ -7590,11 +7755,13 @@ function buildFigmaReport(data) {
   // ── Create page and switch to it ──────────────────────────────────────────
   var page = figma.createPage();
   page.name = 'WCAG Report';
-  figma.currentPage = page;
+  // Con documentAccess "dynamic-page" no se puede asignar currentPage: todo se
+  // arma en la página nueva y se pasa a ella al final, de forma asincrónica.
 
   // ── Root frame ────────────────────────────────────────────────────────────
   var root = figma.createFrame();
   root.name = 'Reporte de accesibilidad · WCAG 2.2 AA';
+  page.appendChild(root);
   root.resize(W, 3000);
   root.fills = sf('#FFFFFF');
   root.clipsContent = false;
@@ -7826,7 +7993,10 @@ function buildFigmaReport(data) {
 
   // ── Resize root and navigate ───────────────────────────────────────────────
   root.resize(W, y);
-  figma.viewport.scrollAndZoomIntoView([root]);
+  if (typeof figma.setCurrentPageAsync === 'function') {
+    figma.setCurrentPageAsync(page).then(function() { figma.viewport.scrollAndZoomIntoView([root]); })
+      .catch(function() {});
+  } else { figma.currentPage = page; figma.viewport.scrollAndZoomIntoView([root]); }
 }
 
 // ─── Message Handlers ─────────────────────────────────────────────────────────
@@ -8138,7 +8308,7 @@ function colorsFromSelection() {
       var label = node.name || hex;
       try {
         if (node.fillStyleId) {
-          var st = figma.getStyleById(node.fillStyleId);
+          var st = estiloPorId(node.fillStyleId);
           if (st && st.name) label = st.name;
         }
       } catch (e) {}
@@ -9113,7 +9283,7 @@ function buildReporteFrames(audits) {
   var ab = (audits.length && audits[0].bounds) ? audits[0].bounds : null;
   if (!ab) {
     try {
-      var anchor = audits.length && audits[0].nodeId ? figma.getNodeById(audits[0].nodeId) : null;
+      var anchor = audits.length && audits[0].nodeId ? nodoPorId(audits[0].nodeId) : null;
       if (anchor && anchor.absoluteBoundingBox) ab = anchor.absoluteBoundingBox;
     } catch (e) {}
   }
@@ -9178,6 +9348,13 @@ function hexToFigmaRGB(hex) {
 }
 
 figma.on('selectionchange', function() {
+  if (typeof figma.getNodeByIdAsync !== 'function') { alCambiarSeleccion(); return; }
+  colaDeAcciones = (colaDeAcciones || Promise.resolve())
+    .then(function() { return precargar(null); })
+    .then(alCambiarSeleccion, alCambiarSeleccion);
+});
+
+function alCambiarSeleccion() {
   // Con el cuentagotas activo, tocar una capa toma su color
   if (modoCuentagotas) {
     var sel0 = figma.currentPage.selection[0];
@@ -9225,7 +9402,7 @@ figma.on('selectionchange', function() {
   // Live mode re-runs the full analysis so the panel is never stale and the
   // designer never has to press a button after changing the selection.
   try { handleMessage({ type: 'analyze-selection', withTypography: liveTypography }); } catch (e) {}
-});
+}
 
 // The real message handler. Wrapped below so a throw surfaces in the panel
 // instead of silently killing the plugin — the failure mode that is hardest
@@ -9249,7 +9426,7 @@ function handleMessage(msg) {
   // Se manda como bytes; el panel arma la imagen. `ref` vuelve tal cual para
   // que el panel sepa a qué pedido corresponde la respuesta.
   if (msg.type === 'export-png') {
-    var nodoPng = msg.nodeId ? figma.getNodeById(msg.nodeId) : figma.currentPage.selection[0];
+    var nodoPng = msg.nodeId ? nodoPorId(msg.nodeId) : figma.currentPage.selection[0];
     if (!nodoPng || typeof nodoPng.exportAsync !== 'function') {
       figma.ui.postMessage({ type: 'png-exported', ref: msg.ref, ok: false,
         message: nodoPng ? 'Esta capa no se puede exportar como imagen.' : 'Seleccioná un frame.' });
@@ -9799,7 +9976,7 @@ function handleMessage(msg) {
   if (msg.type === 'load-local-palette') {
     var palette = [];
     try {
-      figma.getLocalPaintStyles().forEach(function(style) {
+      estilosDeColorLocales().forEach(function(style) {
         var solid = topSolidFill(style.paints);
         if (!solid) return;
         palette.push({
@@ -9860,7 +10037,7 @@ function handleMessage(msg) {
   // ── Re-audit frames from a previously saved session
   if (msg.type === 'reaudit-session') {
     var sessionNodes = (msg.nodeIds || [])
-      .map(function(id) { return figma.getNodeById(id); })
+      .map(function(id) { return nodoPorId(id); })
       .filter(Boolean);
     if (sessionNodes.length === 0) {
       figma.ui.postMessage({ type: 'error', message: 'The frames from the saved session no longer exist in this file. They may have been deleted or moved to another page.' });
@@ -9956,7 +10133,7 @@ function handleMessage(msg) {
     var exportIds2 = Object.keys(exportNodeById2);
     var promises2  = exportIds2.map(function(exportId) {
       var exportNode = exportNodeById2[exportId];
-      var origNode   = figma.getNodeById(exportToOrigId2[exportId]);
+      var origNode   = nodoPorId(exportToOrigId2[exportId]);
       return tryExportNode(exportNode, exportId)
         .then(function(r) {
           if (r) return r;
@@ -9982,7 +10159,7 @@ function handleMessage(msg) {
   }
 
   if (msg.type === 'select-node') {
-    var node = figma.getNodeById(msg.nodeId);
+    var node = nodoPorId(msg.nodeId);
     if (node) {
       // Ir a un hallazgo no es elegir otra cosa para analizar: sin esto, el
       // modo en vivo re-analizaba solo ese nodo y se perdía el resto del lote
@@ -9997,7 +10174,17 @@ function handleMessage(msg) {
   }
 };
 
+// En fila: cada acción espera su precarga y la anterior, así se atienden en el
+// orden en que llegaron. Sin la API asincrónica (tests), todo sigue sincrónico.
+var colaDeAcciones = null;
 figma.ui.onmessage = function(msg) {
+  if (typeof figma.getNodeByIdAsync !== 'function') { manejarSeguro(msg); return; }
+  colaDeAcciones = (colaDeAcciones || Promise.resolve())
+    .then(function() { return precargar(msg); })
+    .then(function() { manejarSeguro(msg); }, function() { manejarSeguro(msg); });
+};
+
+function manejarSeguro(msg) {
   try {
     handleMessage(msg);
   } catch (err) {
@@ -10009,7 +10196,7 @@ figma.ui.onmessage = function(msg) {
       fatal: true
     });
   }
-};
+}
 
 // Startup ping — if the UI never receives this, the problem is in code.js
 // loading, not in any individual action.
