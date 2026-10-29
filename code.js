@@ -1242,6 +1242,38 @@ function collectFocusStops(node, stops, depth, dentroDeControl) {
   return stops;
 }
 
+// Dónde se ve una capa de verdad. Un contenedor transparente mucho más grande
+// que lo que muestra (la capa del logo a todo el ancho de la topbar) ponía el
+// número en una esquina vacía, lejos del logo. En ese caso se usa la caja de lo
+// visible que tiene adentro.
+function cajaVisible(n) {
+  var b = absBox(n);
+  if (!('children' in n) || !n.children || !n.children.length) return b;
+  var pinta = false;
+  try {
+    pinta = (Array.isArray(n.fills) && n.fills.some(function(f) { return f.visible !== false && (f.opacity === undefined || f.opacity > 0); })) ||
+            (Array.isArray(n.strokes) && n.strokes.some(function(f) { return f.visible !== false; }));
+  } catch (e) {}
+  if (pinta) return b;
+  var x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  (function walk(m, d) {
+    if (d > 8 || !isLayerVisible(m)) return;
+    var hoja = !('children' in m) || !m.children || !m.children.length;
+    if (hoja) {
+      var c = absBox(m);
+      if (c.width > 0 && c.height > 0) {
+        x0 = Math.min(x0, c.x); y0 = Math.min(y0, c.y);
+        x1 = Math.max(x1, c.x + c.width); y1 = Math.max(y1, c.y + c.height);
+      }
+      return;
+    }
+    m.children.forEach(function(k) { walk(k, d + 1); });
+  })(n, 0);
+  if (!isFinite(x0)) return b;
+  var dentro = { x: x0, y: y0, width: x1 - x0, height: y1 - y0 };
+  return (dentro.width * dentro.height) < 0.4 * (b.width * b.height) ? dentro : b;
+}
+
 function buildFocusOrder(rootNodes) {
   skippedHiddenLayers = 0;
   skippedHiddenNames  = [];
@@ -1290,7 +1322,7 @@ function buildFocusOrder(rootNodes) {
 
   return {
     stops: stops.map(function(n, i) {
-      var b = absBox(n);
+      var b = cajaVisible(n);
       return {
         index: i + 1, nodeId: n.id, name: n.name || n.type, type: n.type,
         x: b.x, y: b.y, width: b.width, height: b.height,
@@ -1411,7 +1443,7 @@ function buildReadingOrder(rootNodes) {
     recorrido: zonasR.recorrido,
     skip: zonasR.skip,
     stops: raw.map(function(r, i) {
-      var b = absBox(r.node);
+      var b = cajaVisible(r.node);
       var label = '';
       try { label = r.kind === 'text' ? (r.node.characters || '').replace(/\s+/g,' ').trim().slice(0,44) : ''; } catch (e) {}
       return {
@@ -8312,7 +8344,7 @@ function leyendaEnCanvas(parent, x, y, titulo, entradas) {
 
   card.resize(W, cy + PAD - 4);
   card.x = x;
-  card.y = y - (cy + PAD - 4) - 12;     // apoyada arriba del frame, sin taparlo
+  card.y = y - (cy + PAD - 4) - 28;     // arriba del frame, con aire: un número en el borde de arriba asoma 15px
   return card;
 }
 
