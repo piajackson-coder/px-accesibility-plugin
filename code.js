@@ -998,8 +998,148 @@ function absBox(node) {
   return b ? b : { x: node.x || 0, y: node.y || 0, width: node.width || 0, height: node.height || 0 };
 }
 
-// Sorts a set of siblings into reading order using row banding.
+// ─── Zonas de la pantalla: topbar, sidebar, contenido, footer ────────────────
+// Ordenar solo por el centro vertical rompe las pantallas con sidebar: una
+// sidebar alta tiene el centro a mitad de pantalla, así que el contenido de
+// arriba (un hero, la primera fila de cards) se leía ANTES que la sidebar.
+// El orden que espera alguien con teclado o lector es por zonas:
+// saltar al contenido → topbar → sidebar → contenido → footer.
+var RE_SKIP   = /skip[\s_-]*(to[\s_-]*)?(main[\s_-]*)?content|skip[\s_-]*link|saltar[\s_-]*(al|a)[\s_-]*contenido|ir[\s_-]*al[\s_-]*contenido|saltar[\s_-]*navegaci/i;
+var RE_HEADER = /(^|[\s\/_-])(header|top[\s_-]?bar|nav[\s_-]?bar|app[\s_-]?bar|encabezado|cabecera)([\s\/_-]|$)/i;
+var RE_NAV    = /(^|[\s\/_-])(side[\s_-]?bar|side[\s_-]?nav|sidenav|drawer|men[uú][\s_-]lateral|nav(igation)?[\s_-]?rail|left[\s_-]?nav|aside)([\s\/_-]|$)/i;
+var RE_FOOTER = /(^|[\s\/_-])(footer|pie[\s_-]de[\s_-]p[aá]gina)([\s\/_-]|$)/i;
+var RANGO_ZONA = { skip: 0, header: 1, nav: 2, main: 3, navDer: 4, footer: 5 };
+var NOMBRE_ZONA = { skip: 'Saltar al contenido', header: 'Topbar', nav: 'Sidebar', navDer: 'Sidebar',
+                    main: 'Contenido', footer: 'Footer' };
+
+function zonaPorNombre(n) {
+  var nm = String((n && n.name) || '');
+  if (RE_SKIP.test(nm)) return 'skip';
+  try { if (n.type === 'TEXT' && RE_SKIP.test(n.characters || '')) return 'skip'; } catch (e) {}
+  if (RE_NAV.test(nm)) return 'nav';
+  if (RE_HEADER.test(nm)) return 'header';
+  if (RE_FOOTER.test(nm)) return 'footer';
+  return null;
+}
+
+// Clasifica hermanos por nombre y por forma. Devuelve { id: zona } solo si
+// encontró alguna zona; si no, null y se ordena como siempre.
+function zonasDeHermanos(nodes) {
+  if (!nodes || nodes.length < 2) return null;
+  var p = nodes[0].parent;
+  if (!p || p.type === 'PAGE' || p.type === 'SECTION') return null;   // frames sueltos en el canvas
+  var it = nodes.map(function(n) { var b = absBox(n); return { n: n, x: b.x, y: b.y, w: b.width, h: b.height }; });
+  var minX = Math.min.apply(null, it.map(function(a) { return a.x; }));
+  var minY = Math.min.apply(null, it.map(function(a) { return a.y; }));
+  var maxX = Math.max.apply(null, it.map(function(a) { return a.x + a.w; }));
+  var maxY = Math.max.apply(null, it.map(function(a) { return a.y + a.h; }));
+  var W = maxX - minX, H = maxY - minY, hay = false, z = {};
+  it.forEach(function(a) {
+    var r = zonaPorNombre(a.n);
+    if (!r && H >= 300 && W >= 500 && a.h >= 0.55 * H && a.w <= 0.32 * W) {
+      if (a.x <= minX + 4) r = 'nav';
+      else if (a.x + a.w >= maxX - 4) r = 'navDer';
+    }
+    if (!r && W >= 300 && a.y <= minY + 4 && a.h <= 0.22 * H && a.w >= 0.6 * W && H > a.h * 2) r = 'header';
+    if (!r && W >= 300 && a.y + a.h >= maxY - 4 && a.h <= 0.22 * H && a.w >= 0.6 * W && a.y > minY + 0.5 * H) r = 'footer';
+    if (r === 'nav' && a.x + a.w >= maxX - 4 && a.x > minX + 4) r = 'navDer';
+    if (r) { hay = true; a.r = r; }
+  });
+  if (!hay) return null;
+  // Lo suelto arriba de la sidebar es parte de la topbar; lo de abajo, del footer
+  var navs = it.filter(function(a) { return a.r === 'nav' || a.r === 'navDer'; });
+  if (navs.length) {
+    var top = Math.min.apply(null, navs.map(function(a) { return a.y; }));
+    var bot = Math.max.apply(null, navs.map(function(a) { return a.y + a.h; }));
+    it.forEach(function(a) {
+      if (a.r) return;
+      if (a.y + a.h <= top + 8) a.r = 'header';
+      else if (a.y >= bot - 8 && bot < maxY - 8) a.r = 'footer';
+    });
+  }
+  it.forEach(function(a) { z[a.n.id] = a.r || 'main'; });
+  return z;
+}
+
+// La zona de una capa: la primera que encuentre subiendo por sus contenedores
+var _zonaCache = {};
+function zonaDeNodo(node) {
+  var n = node, g = 0;
+  while (n && n.parent && g++ < 30) {
+    var p = n.parent;
+    if (p.type === 'PAGE' || p.type === 'SECTION') break;
+    var k = p.id;
+    if (_zonaCache[k] === undefined) {
+      var hermanos = ('children' in p) ? p.children.filter(isLayerVisible) : [];
+      _zonaCache[k] = zonasDeHermanos(hermanos) || {};
+    }
+    var r = _zonaCache[k][n.id];
+    if (r && r !== 'main') return r;
+    n = p;
+  }
+  return zonaPorNombre(node) || 'main';
+}
+
+// El "Saltar al contenido", aunque esté oculto (suele estarlo hasta el foco)
+function buscarSkip(roots) {
+  var hallado = null;
+  (function walk(n, d) {
+    if (hallado || !n || d > 40) return;
+    if (d > 0 && zonaPorNombre(n) === 'skip') { hallado = n; return; }
+    if ('children' in n) n.children.forEach(function(c) { walk(c, d + 1); });
+  })({ children: roots }, 0);
+  return hallado;
+}
+
+// El recorrido por zonas y el aviso de 2.4.1, para foco y para lectura
+function analisisDeZonas(roots, stopNodes, esFoco) {
+  _zonaCache = {};
+  var zonas = stopNodes.map(zonaDeNodo);
+  var recorrido = [];
+  zonas.forEach(function(z) {
+    var l = NOMBRE_ZONA[z] || 'Contenido';
+    if (recorrido[recorrido.length - 1] !== l) recorrido.push(l);
+  });
+  var skip = buscarSkip(roots);
+  var menuAntes = 0;
+  for (var i = 0; i < zonas.length; i++) {
+    if (zonas[i] === 'main' || zonas[i] === 'footer') break;
+    if (zonas[i] === 'header' || zonas[i] === 'nav' || zonas[i] === 'navDer') menuAntes++;
+  }
+  var avisos = [];
+  if (esFoco && !skip && menuAntes >= 3) {
+    avisos.push('Falta el "Saltar al contenido" (2.4.1, nivel A): con Tab hay que pasar por ' + menuAntes +
+      ' controles de la topbar y la sidebar antes de llegar al contenido. Sumalo como primer elemento: ' +
+      'oculto hasta que recibe el foco, y que lleve al contenido principal.');
+  }
+  return {
+    zonas: zonas,
+    recorrido: recorrido.length > 1 ? (skip ? ['Saltar al contenido'] : []).concat(recorrido) : [],
+    skip: skip ? { nodeId: skip.id, name: skip.name || 'Saltar al contenido' } : null,
+    menuAntes: menuAntes,
+    avisos: avisos
+  };
+}
+
+// Sorts a set of siblings into reading order using row banding, by zones.
 function sortReadingOrder(nodes) {
+  var zonas = zonasDeHermanos(nodes);
+  if (zonas) {
+    var grupos = {};
+    nodes.forEach(function(n) {
+      var r = RANGO_ZONA[zonas[n.id]]; if (r === undefined) r = 3;
+      (grupos[r] = grupos[r] || []).push(n);
+    });
+    var out0 = [];
+    Object.keys(grupos).map(Number).sort(function(a, b) { return a - b; }).forEach(function(r) {
+      ordenarPorFilas(grupos[r]).forEach(function(n) { out0.push(n); });
+    });
+    return out0;
+  }
+  return ordenarPorFilas(nodes);
+}
+
+function ordenarPorFilas(nodes) {
   var items = nodes.map(function(n) {
     var b = absBox(n);
     return { node: n, x: b.x, y: b.y, cy: b.y + b.height / 2 };
@@ -1104,14 +1244,19 @@ function buildFocusOrder(rootNodes) {
     return stops[i] && stops[i].id === n.id;
   });
 
-  var warnings = [];
+  var zonasF = analisisDeZonas(visible, stops, true);
+
+  var warnings = zonasF.avisos.slice();
   if (stops.length === 0) warnings.push('No se encontraron elementos interactivos visibles en esta selección.');
   if (stops.length > 40)  warnings.push('Más de 40 paradas de foco. Conviene dividir la pantalla en regiones y anotar por región.');
 
   // Flag horizontal back-jumps: an element that sits above and to the left of
   // the previous one usually means the visual layout and the reading order disagree.
+  // Pasar de una zona a otra (de la sidebar al contenido de arriba) es lo
+  // esperado, no un salto raro: solo se avisa dentro de la misma zona.
   for (var i = 1; i < stops.length; i++) {
     var prev = absBox(stops[i-1]), cur = absBox(stops[i]);
+    if (zonasF.zonas[i] !== zonasF.zonas[i-1]) continue;
     if (cur.y + cur.height < prev.y) {
       warnings.push('"' + (stops[i].name || stops[i].type) + '" queda por encima del elemento anterior. Revisá si el orden visual y el orden lógico coinciden.');
       break;
@@ -1125,10 +1270,14 @@ function buildFocusOrder(rootNodes) {
         index: i + 1, nodeId: n.id, name: n.name || n.type, type: n.type,
         x: b.x, y: b.y, width: b.width, height: b.height,
         detected: detectInteractive(n),
-        aria: suggestAria(n)
+        aria: suggestAria(n),
+        zona: NOMBRE_ZONA[zonasF.zonas[i]] || 'Contenido'
       };
     }),
     rootHidden: false,
+    recorrido: zonasF.recorrido,
+    skip: zonasF.skip,
+    menuAntes: zonasF.menuAntes,
     matchesDocumentOrder: matchesDoc,
     hiddenSkipped: skippedHiddenLayers,
     warnings: warnings
@@ -1225,16 +1374,19 @@ function buildReadingOrder(rootNodes) {
   sortReadingOrder(visible).forEach(function(r) { collectReadingStops(r, raw, 0); });
 
   raw = raw.filter(function(it) { return rendersOnScreen(it.node); });
+  var zonasR = analisisDeZonas(visible, raw.map(function(r) { return r.node; }), false);
   return {
     rootHidden: false,
     hiddenSkipped: skippedHiddenLayers,
+    recorrido: zonasR.recorrido,
+    skip: zonasR.skip,
     stops: raw.map(function(r, i) {
       var b = absBox(r.node);
       var label = '';
       try { label = r.kind === 'text' ? (r.node.characters || '').replace(/\s+/g,' ').trim().slice(0,44) : ''; } catch (e) {}
       return {
         index: i + 1, nodeId: r.node.id, name: r.node.name || r.node.type,
-        kind: r.kind, text: label, type: r.node.type,
+        kind: r.kind, text: label, type: r.node.type, zona: NOMBRE_ZONA[zonasR.zonas[i]] || 'Contenido',
         x: b.x, y: b.y, width: b.width, height: b.height
       };
     }),
