@@ -18,6 +18,8 @@ Las versiones nuevas llegan solas. Abajo de la home del plugin se ve qué versi�
 
 La skill para auditar producto desarrollado está en el Framework de PX: [`skills/03-materialize-skills/accessibility-audit`](https://github.com/thisisqubika/product-experience-ai-framework/tree/825e9a1449c38d1bffc21f5f4c2ebdb4ae17fe77/skills/03-materialize-skills/accessibility-audit).
 
+**Descargar el zip:** [Q-px-accesibility-v2.zip](https://github.com/piajackson-coder/px-accesibility-plugin/raw/main/Q-px-accesibility-v2.zip) (siempre la última versión). Para importarlo a mano en Figma de escritorio: descomprimilo en una carpeta fija → **Plugins → Development → Import plugin from manifest…** → `manifest.json`.
+
 ### Desarrollo
 
 Para probar cambios antes de publicarlos: en Figma de escritorio, **Plugins → Development → Import plugin from manifest…** y elegí `manifest.json`. Archivos: `manifest.json`, `code.js`, `ui.html`. Los `test-*.js` no se empaquetan, son para desarrollo.
