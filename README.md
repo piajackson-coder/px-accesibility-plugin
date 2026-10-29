@@ -1,4 +1,4 @@
-# Auditor de accesibilidad WCAG 2.2 AA · px studio · Release v2.1.0 · 29/10/26
+# Auditor de accesibilidad WCAG 2.2 AA · px studio · Release v2.1.1 · 29/10/26
 
 Plugin de Figma con la identidad de Qubika: base blanco y negro, Be Vietnam Pro,
 y los secundarios de la paleta usados **solo** para significar algo — nunca de

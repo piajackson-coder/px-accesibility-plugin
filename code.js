@@ -1164,17 +1164,41 @@ function ordenarPorFilas(nodes) {
   return out;
 }
 
+// El logo de la topbar: casi siempre es un link al inicio, aunque en el diseño
+// sea un vector sin interacción. Es la primera parada del foco y una imagen
+// para el lector.
+var RE_LOGO = /(^|[\s\/_-])(logo|logotipo|logotype|isotipo|isologo|wordmark|brand)([\s\/_-]|$)/i;
+function esLogoDeTopbar(node) {
+  if (!RE_LOGO.test(String(node.name || ''))) return false;
+  var z = zonaDeNodo(node);
+  if (z === 'header') return true;
+  // Sin zonas detectadas: un logo en la franja de arriba de la pantalla
+  var n = node, raiz = node;
+  while (n && n.parent && n.parent.type !== 'PAGE' && n.parent.type !== 'SECTION') { raiz = n.parent; n = n.parent; }
+  if (raiz === node) return false;
+  var b = absBox(node), r = absBox(raiz);
+  return b.y - r.y <= Math.max(120, r.height * 0.12);
+}
+
 // Walks the tree collecting focus stops in inferred order.
-function collectFocusStops(node, stops, depth) {
+// dentroDeControl: ya hay una parada que contiene esta capa (un botón Profile
+// con su avatar adentro). Ahí solo cuenta como parada aparte lo que tiene
+// evidencia propia —interacción de prototipo, variantes de estado o un nombre
+// de control como "button"—; la forma sola no alcanza;
+// si no, el avatar salía como otra parada y su número tapaba al del botón.
+function collectFocusStops(node, stops, depth, dentroDeControl) {
   stops = stops || [];
   depth = depth || 0;
   if (depth > 60) return stops;
+
+  if (depth > 0 && !dentroDeControl && esLogoDeTopbar(node)) { stops.push(node); return stops; }
 
   // Outermost interactive wins — do not descend into an element that is itself
   // a stop. Exception: a container with two or more texts is a section, not a
   // single control, so descend into it and look for the real controls inside.
   if (depth > 0) {
     var det = detectInteractive(node);
+    if (dentroDeControl && det.is && det.confidence < 0.7) det = { is: false, why: null, confidence: 0 };
     if (det.is && !(node.type === 'TEXT' && !isFocusable(node))) {
       var texts = ('children' in node) ? directTextChildren(node) : [];
       // Strong evidence (prototype reaction, state variants, explicit name) means
@@ -1196,7 +1220,7 @@ function collectFocusStops(node, stops, depth) {
       if ('children' in node) {
         var kids0 = node.children.filter(isLayerVisible);
         var ord0 = (node.layoutMode && node.layoutMode !== 'NONE') ? kids0 : sortReadingOrder(kids0);
-        ord0.forEach(function(c) { collectFocusStops(c, stops, depth + 1); });
+        ord0.forEach(function(c) { collectFocusStops(c, stops, depth + 1, dentroDeControl || strong); });
       }
       // Weak evidence and nothing real inside: fall back to the container, so a
       // heuristic hit is never silently dropped.
@@ -1214,7 +1238,7 @@ function collectFocusStops(node, stops, depth) {
     ? kids
     : sortReadingOrder(kids);
 
-  ordered.forEach(function(child) { collectFocusStops(child, stops, depth + 1); });
+  ordered.forEach(function(child) { collectFocusStops(child, stops, depth + 1, dentroDeControl); });
   return stops;
 }
 
@@ -1229,6 +1253,7 @@ function buildFocusOrder(rootNodes) {
   }
 
   var stops = [];
+  _zonaCache = {};
   sortReadingOrder(visible).forEach(function(r) { collectFocusStops(r, stops, 0); });
 
   stops = stops.filter(rendersOnScreen);
@@ -1269,7 +1294,9 @@ function buildFocusOrder(rootNodes) {
       return {
         index: i + 1, nodeId: n.id, name: n.name || n.type, type: n.type,
         x: b.x, y: b.y, width: b.width, height: b.height,
-        detected: detectInteractive(n),
+        detected: esLogoDeTopbar(n)
+          ? { is: true, why: 'es el logo de la topbar: casi siempre es un link al inicio', confidence: 0.8 }
+          : detectInteractive(n),
         aria: suggestAria(n),
         zona: NOMBRE_ZONA[zonasF.zonas[i]] || 'Contenido'
       };
@@ -1327,6 +1354,8 @@ function collectReadingStops(node, stops, depth) {
   if (depth > 60) return stops;
 
   if (depth > 0) {
+    // El logo de la topbar se narra como imagen (con su alt)
+    if (node.type !== 'TEXT' && esLogoDeTopbar(node)) { stops.push({ node: node, kind: 'image' }); return stops; }
     // A text node is always a stop in the narration
     if (node.type === 'TEXT') {
       var t = '';
@@ -1371,6 +1400,7 @@ function buildReadingOrder(rootNodes) {
   // Multiple frames selected: narrate them in reading order too, not in
   // whatever order they happened to be clicked.
   var raw = [];
+  _zonaCache = {};
   sortReadingOrder(visible).forEach(function(r) { collectReadingStops(r, raw, 0); });
 
   raw = raw.filter(function(it) { return rendersOnScreen(it.node); });
@@ -8319,6 +8349,24 @@ function buildFocusOrderOverlay(rootNode, order) {
   // coordinates that come from the UI have to be rebased onto the overlay.
   var oX = overlay.x, oY = overlay.y;
 
+  // Dónde va cada número. Dos elementos que comparten esquina (la búsqueda y
+  // el campo que tiene adentro, una card y su botón) ponían un número encima
+  // del otro: el 2 tapaba al 1. Si un lugar ya está ocupado, el número se corre
+  // al costado hasta encontrar lugar libre.
+  var ocupados = [];
+  var posBadge = order.stops.map(function(stop) {
+    var px = (order.kind === 'reading' ? stop.x + stop.width : stop.x) - oX - BADGE / 2;
+    var py = stop.y - oY - BADGE / 2;
+    var paso = order.kind === 'reading' ? -(BADGE + 4) : (BADGE + 4);
+    for (var v = 0; v < 12; v++) {
+      var choca = ocupados.some(function(o) { return Math.abs(o.x - px) < BADGE + 2 && Math.abs(o.y - py) < BADGE + 2; });
+      if (!choca) break;
+      px += paso;
+    }
+    ocupados.push({ x: px, y: py });
+    return { x: px, y: py };
+  });
+
   // Connecting lines first, so badges sit on top
   var links = figma.createFrame();
   links.name = 'Conectores';
@@ -8358,7 +8406,7 @@ function buildFocusOrderOverlay(rootNode, order) {
   overlay.appendChild(badges);
   try { badges.expanded = false; } catch (e) {}
 
-  order.stops.forEach(function(stop) {
+  order.stops.forEach(function(stop, iStop) {
     var badge = figma.createFrame();
     badge.name = 'focus ' + stop.index + ' · ' + stop.name;
     // IMPORTANT: setting layoutMode flips both sizing modes to AUTO, which makes
@@ -8378,8 +8426,8 @@ function buildFocusOrderOverlay(rootNode, order) {
     badge.strokeWeight = 2;
     // Foco en la esquina superior izquierda, lectura en la derecha: con "los
     // dos" marcan los mismos elementos y, en la misma esquina, uno tapaba al otro
-    badge.x = (order.kind === 'reading' ? stop.x + stop.width : stop.x) - oX - BADGE / 2;
-    badge.y = stop.y - oY - BADGE / 2;
+    badge.x = posBadge[iStop].x;
+    badge.y = posBadge[iStop].y;
     badges.appendChild(badge);
 
     var t = figma.createText();

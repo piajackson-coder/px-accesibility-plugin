@@ -1342,7 +1342,7 @@
 // Versión del plugin. Como los plugins locales no se actualizan solos, la
 // versión y la fecha quedan a la vista y se dice dónde chequear si hay una
 // nueva. Sin esto nadie sabe qué está corriendo.
-var VERSION = 'v2.1.0';
+var VERSION = 'v2.1.1';
 
 // El cuentagotas del sistema (el de la lupa, que toma de toda la pantalla)
 // solo existe si el panel tiene dirección web. Figma carga este HTML sin
@@ -1371,6 +1371,11 @@ document.addEventListener('click', function(ev){
 
 // Lo que cambió en cada versión. Se muestra en Ayuda → Novedades.
 var CHANGELOG = [
+  { v:'v2.1.1', fecha:'2026-10-29', items:[
+    'Orden de foco: si dos números caen en la misma esquina, el segundo se corre. Antes el 2 tapaba al 1.',
+    'Lo que está adentro de un botón (el avatar del Profile) ya no cuenta como otra parada, salvo que tenga su propia interacción o se llame como un control.',
+    'El logo de la topbar es la primera parada del foco (suele ser un link al inicio) y se lee como imagen.'
+  ]},
   { v:'v2.1.0', fecha:'2026-10-29', items:[
     'Orden de foco y de lectura por zonas: saltar al contenido → topbar → sidebar → contenido → footer. Antes una sidebar alta quedaba en el medio del contenido.',
     'Avisa si falta el "Saltar al contenido" (2.4.1) cuando hay que pasar por el menú antes de llegar al contenido.',
